@@ -1,1 +1,1 @@
-# AnalizadorSint-cticoPROMAX
+# AnalizadorSintácticoPROMAX
