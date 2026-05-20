@@ -174,6 +174,10 @@ namespace ArchivoDeTokens
             else if (t == "PR11") ParseIN15();
             else if (t == "PR9" || t == "PR09") ParseIN16();
             else if (t == "PR23") ParseIN17();
+            else if (t.StartsWith("IDENT") || t == "ID")
+            {
+                ParseAsignacion();
+            }
             else if (t.StartsWith("IDENT") || t == "CNU" || t == "CN")
             {
                 string next = TokenSiguiente();
@@ -244,6 +248,7 @@ namespace ArchivoDeTokens
             {
                 Match("opa");
                 if (TokenActual() == "PR16" || TokenActual() == "PR17") Match(TokenActual());
+                else if (TokenActual() == "OL2") ParseIN14();
                 else throw new Exception("Se esperaba PR16 o PR17 para booleano.");
             }
             Match("FDL");
@@ -386,6 +391,110 @@ namespace ArchivoDeTokens
                 ParseARG13(); // Recursividad: Se llama a sí mismo por si hay más CASOS
             }
             // Si no es PR24, entra a Épsilon (no hace nada y sale)
+        }
+
+        private void ParseAsignacion()
+        {
+            // 1. Validamos que inicie con un identificador (ej. IDENT1, IDENT2)
+            if (TokenActual().StartsWith("IDENT") || TokenActual() == "ID")
+            {
+                Match(TokenActual()); // Consume el identificador
+            }
+            else
+            {
+                throw new Exception("Se esperaba un identificador para iniciar la asignación.");
+                return;
+            }
+
+            // 2. Validamos el operador de asignación (ej. ce10 si mapeaste el '=' ahí, o "OAS")
+            if (TokenActual() == "OPA" || TokenActual() == "opa")
+            {
+                Match(TokenActual()); // Consume el '='
+            }
+            else
+            {
+                throw new Exception("Se esperaba el operador de asignación '='.");
+                return;
+            }
+
+            // La regla que acepta CUALQUIER valor
+            ParseExpresion();
+
+            // 4. Cerramos con el fin de línea
+            Match("FDL");
+        }
+
+        private void ParseExpresion()
+        {
+            string t = TokenActual();
+
+            // Si empieza con comillas o es una constante de texto/cadena
+            if (t == "CAD" || t.StartsWith("cad"))
+            {
+                ParseValorCadena();
+            }
+            // Si es un número (CNU o CN) o abre un paréntesis, probablemente es una operación matemática
+            else if (t == "CNU" || t == "CN" || t == "ce07" || t.StartsWith("IDENT"))
+            {
+                // Evaluamos si es una expresión aritmética o un ID solo.
+                // Nota: Si tu lenguaje soporta "ID = ID_DOS", ParseExpresionAritmetica debe poder manejarlo.
+                ParseExpresionAritmetica();
+            }
+            // Si es un valor lógico/booleano (ej. true/false o PR de verdadero/falso)
+            else if (t == "PR16" || t == "PR17")
+            {
+                Match(TokenActual());
+            }else if (t == "OL2")
+            {
+                ParseIN14();
+            }
+            else
+            {
+                throw new Exception($"Valor o expresión inválida en la asignación. No se reconoce: '{t}'");
+            }
+        }
+
+        private void ParseExpresionAritmetica()
+        {
+            ParseTerminoAritmetico();
+
+            // Si después del primer número o ID viene un operador (+, -, *, /)
+            while (TokenActual() == "OA1" || TokenActual() == "OA2" || TokenActual() == "OA3" || TokenActual() == "OA4" || TokenActual() == "OA5")
+            {
+                Match(TokenActual()); // Consumimos el operador (+, -, *, /)
+                ParseTerminoAritmetico();
+            }
+        }
+
+        private void ParseTerminoAritmetico()
+        {
+            string t = TokenActual();
+            if (t == "CNU" || t == "CN" || t.StartsWith("IDENT"))
+            {
+                Match(t); // Consume el número o la variable
+            }
+            else if (t == "ce07") // Paréntesis de apertura '('
+            {
+                Match("ce07");
+                ParseExpresionAritmetica(); // Permite sub-expresiones como (a + b)
+                Match("ce08"); // Paréntesis de cierre ')'
+            }
+            else
+            {
+                throw new Exception("Se esperaba un número, variable o '('");
+            }
+        }
+
+        private void ParseValorCadena()
+        {
+            Match(TokenActual()); // Consume la constante de cadena (CDE)
+
+            // Si tu lenguaje permite concatenar cadenas (ej: "hola" + "mundo"), aquí validarías el '+'
+            if (TokenActual() == "OA1") // Ajusta a tu token de suma
+            {
+                Match(TokenActual());
+                ParseValorCadena(); // Recursividad para seguir concatenando
+            }
         }
 
         private void ParseINCRE()
