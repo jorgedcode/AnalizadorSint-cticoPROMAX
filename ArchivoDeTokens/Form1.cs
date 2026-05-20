@@ -89,6 +89,36 @@ namespace ArchivoDeTokens
         private List<TokenSintactico> tokensSintacticosObj = new List<TokenSintactico>();
         private List<ErrorSintactico> listaErroresSintacticos = new List<ErrorSintactico>();
         private StringBuilder traduccionSintactica = new StringBuilder();
+        Dictionary<string, string> palabrasReservadas = new Dictionary<string, string>
+        {
+            ["PR1"] = "INI",
+            ["PR2"] = "FIN",
+            ["PR3"] = "NVO",
+            ["PR4"] = "COMP",
+            ["PR5"] = "FLOT",
+            ["OA5"] = "ALA",
+            ["PR7"] = "CICLO",
+            ["PR8"] = "MTS",
+            ["PR9"] = "VE",
+            ["PR10"] = "DETEN",
+            ["PR11"] = "SI",
+            ["PR12"] = "SINO",
+            ["PR13"] = "VIENE",
+            ["PR14"] = "VA",
+            ["PR15"] = "LOGI",
+            ["PR16"] = "LEG",
+            ["PR17"] = "MENT",
+            ["PR18"] = "MTX",
+            ["PR19"] = "PTX",
+            ["PR20"] = "TBM",
+            ["PR21"] = "OLO",
+            ["PR22"] = "NAH",
+            ["PR23"] = "NINT",
+            ["PR24"] = "CASO",
+            ["PR25"] = "LVC"
+
+        };
+
 
         // Retorna el token en la posición actual
         private string TokenActual()
@@ -106,7 +136,6 @@ namespace ArchivoDeTokens
             return tokensSintacticosObj.Count > 0 ? tokensSintacticosObj.Last().Linea : 0;
         }
 
-        // Retorna el siguiente token (Lookahead)
         private string TokenSiguiente()
         {
             if (punteroSintactico + 1 < tokensSintacticosObj.Count)
@@ -114,13 +143,12 @@ namespace ArchivoDeTokens
             return "EOF";
         }
 
-        // Método auxiliar para imprimir la traza gramatical
         private void RegistrarTraduccion(string regla)
         {
             traduccionSintactica.AppendLine($"Línea {LineaActual()}: {regla}");
         }
 
-        // Motor Principal: Verifica y avanza el puntero
+        // Verifica y avanza el puntero
         private void Match(string esperado)
         {
             string actual = TokenActual();
@@ -128,7 +156,6 @@ namespace ArchivoDeTokens
             if (actual == "EOF")
                 throw new ExcepcionSintactica($"Se llegó al final inesperadamente. Faltó: '{esperado}'");
 
-            // Normalizaciones flexibles originales
             if (esperado == "ID" && actual.StartsWith("IDENT")) { punteroSintactico++; return; }
             if (esperado == "opa" && (actual == "opa" || actual == "OPA" || actual == "OPAS")) { punteroSintactico++; return; }
             if (esperado == "CNU" && (actual == "CNU" || actual == "CN")) { punteroSintactico++; return; }
@@ -139,11 +166,17 @@ namespace ArchivoDeTokens
             }
             else
             {
-                throw new ExcepcionSintactica($"Se esperaba '{esperado}', pero se encontró '{actual}'.");
+                if (esperado.StartsWith("PR") || esperado.StartsWith("OA"))
+                {
+                    throw new ExcepcionSintactica($"Se esperaba '{palabrasReservadas[esperado]}', pero se encontró '{actual}'.");
+                }
+                else
+                {
+                    throw new ExcepcionSintactica($"Se esperaba '{esperado}', pero se encontró '{actual}'.");
+                }
             }
         }
 
-        // ================= REGLAS DE LA GLC (CON TU LÓGICA ORIGINAL) =================
 
         private void ParsePrograma()
         {
@@ -176,7 +209,6 @@ namespace ArchivoDeTokens
 
         private void RecuperarModoPanico()
         {
-            // Avanzamos hasta encontrar un punto de sincronización seguro
             while (TokenActual() != "FDL" && TokenActual() != "ce10" && TokenActual() != "ce09" && TokenActual() != "EOF")
             {
                 punteroSintactico++;
@@ -184,17 +216,15 @@ namespace ArchivoDeTokens
 
             if (TokenActual() == "FDL")
             {
-                punteroSintactico++; // Consumimos el fin de línea y seguimos
+                punteroSintactico++;
             }
             else if (TokenActual() == "ce09")
             {
-                // Si el error ocurrió al declarar un CICLO o SI y caímos directamente en su llave de apertura '{'
-                // debemos consumirla y evaluar su bloque interno para que la llave de cierre '}' no rompa el programa principal.
                 punteroSintactico++;
                 ParseInstruccionesBloque();
                 if (TokenActual() == "ce10")
                 {
-                    punteroSintactico++; // Consumimos la llave de cierre huérfana
+                    punteroSintactico++;
                 }
             }
         }
@@ -321,7 +351,7 @@ namespace ArchivoDeTokens
                 Match("opa");
                 if (TokenActual() == "PR16" || TokenActual() == "PR17") Match(TokenActual());
                 else if (TokenActual() == "OL2") ParseIN14();
-                else throw new ExcepcionSintactica("Se esperaba PR16 o PR17 para booleano.");
+                else throw new ExcepcionSintactica("Se esperaba LEG o MENT para booleano.");
                 msg += " [opa PR16 | PR17 | OL2]";
             }
             msg += " FDL";
@@ -471,7 +501,7 @@ namespace ArchivoDeTokens
         { // PR16 | PR17 (Verdadero o Falso)
             string t = TokenActual();
             if (t == "PR16" || t == "PR17") Match(t);
-            else throw new Exception($"Se esperaba PR16 o PR17, se encontró {t}");
+            else throw new Exception($"Se esperaba LEG o MENT, se encontró {t}");
         }
 
         private void ParseARG9()
@@ -482,13 +512,12 @@ namespace ArchivoDeTokens
         private void ParseARG10()
         { // CAR (o su equivalente léxico)
             string t = TokenActual();
-            if (t == "CAR" || t == "CAD") Match(t); // Permite CAD temporalmente por flexibilidad léxica
+            if (t == "CAR" || t == "CAD") Match(t);
             else throw new Exception($"ARG10 inválido: {t}");
         }
 
         private void ParseARG11()
         { // IDBOOL | PR16 | PR17 | OPREL | OPLOG
-          // Esto se comporta como una condición completa
             ParseCONDIC();
         }
 
@@ -507,9 +536,8 @@ namespace ArchivoDeTokens
                 ParseInstruccionesBloque(); // INSTR
                 Match("PR10"); Match("FDL");
 
-                ParseARG13(); // Recursividad: Se llama a sí mismo por si hay más CASOS
+                ParseARG13();
             }
-            // Si no es PR24, entra a Épsilon (no hace nada y sale)
         }
 
         private void ParseExpresion()
@@ -525,10 +553,8 @@ namespace ArchivoDeTokens
             else if (t == "CNU" || t == "CN" || t == "ce07" || t.StartsWith("IDENT"))
             {
                 // Evaluamos si es una expresión aritmética o un ID solo.
-                // Nota: Si tu lenguaje soporta "ID = ID_DOS", ParseExpresionAritmetica debe poder manejarlo.
                 ParseExpresionAritmetica();
             }
-            // Si es un valor lógico/booleano (ej. true/false o PR de verdadero/falso)
             else if (t == "PR16" || t == "PR17")
             {
                 Match(TokenActual());
@@ -577,7 +603,6 @@ namespace ArchivoDeTokens
         {
             Match(TokenActual()); // Consume la constante de cadena (CDE)
 
-            // Si tu lenguaje permite concatenar cadenas (ej: "hola" + "mundo"), aquí validarías el '+'
             if (TokenActual() == "OA1") // Ajusta a tu token de suma
             {
                 Match(TokenActual());
