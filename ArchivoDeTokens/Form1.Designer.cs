@@ -63,7 +63,7 @@
             // 
             // btnLexico
             // 
-            this.btnLexico.Location = new System.Drawing.Point(1076, 43);
+            this.btnLexico.Location = new System.Drawing.Point(1339, 35);
             this.btnLexico.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnLexico.Name = "btnLexico";
             this.btnLexico.Size = new System.Drawing.Size(104, 57);
@@ -90,7 +90,7 @@
             // 
             // btnCargarProg
             // 
-            this.btnCargarProg.Location = new System.Drawing.Point(1077, 105);
+            this.btnCargarProg.Location = new System.Drawing.Point(1340, 97);
             this.btnCargarProg.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnCargarProg.Name = "btnCargarProg";
             this.btnCargarProg.Size = new System.Drawing.Size(104, 64);
@@ -102,7 +102,7 @@
             // 
             // btnEditarProg
             // 
-            this.btnEditarProg.Location = new System.Drawing.Point(1077, 174);
+            this.btnEditarProg.Location = new System.Drawing.Point(1340, 166);
             this.btnEditarProg.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnEditarProg.Name = "btnEditarProg";
             this.btnEditarProg.Size = new System.Drawing.Size(104, 50);
@@ -114,7 +114,7 @@
             // 
             // btnGuardarProg
             // 
-            this.btnGuardarProg.Location = new System.Drawing.Point(1077, 229);
+            this.btnGuardarProg.Location = new System.Drawing.Point(1340, 221);
             this.btnGuardarProg.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnGuardarProg.Name = "btnGuardarProg";
             this.btnGuardarProg.Size = new System.Drawing.Size(104, 53);
@@ -126,7 +126,7 @@
             // 
             // btnGuardarArchTokens
             // 
-            this.btnGuardarArchTokens.Location = new System.Drawing.Point(1076, 287);
+            this.btnGuardarArchTokens.Location = new System.Drawing.Point(1339, 279);
             this.btnGuardarArchTokens.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnGuardarArchTokens.Name = "btnGuardarArchTokens";
             this.btnGuardarArchTokens.Size = new System.Drawing.Size(104, 68);
@@ -150,7 +150,7 @@
             this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
             this.pictureBox1.InitialImage = ((System.Drawing.Image)(resources.GetObject("pictureBox1.InitialImage")));
-            this.pictureBox1.Location = new System.Drawing.Point(1317, 43);
+            this.pictureBox1.Location = new System.Drawing.Point(1510, 34);
             this.pictureBox1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(219, 190);
@@ -161,12 +161,13 @@
             // lblEquipo
             // 
             this.lblEquipo.AutoSize = true;
-            this.lblEquipo.Location = new System.Drawing.Point(1317, 255);
+            this.lblEquipo.Location = new System.Drawing.Point(1519, 247);
             this.lblEquipo.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblEquipo.Name = "lblEquipo";
             this.lblEquipo.Size = new System.Drawing.Size(37, 16);
             this.lblEquipo.TabIndex = 17;
             this.lblEquipo.Text = "label";
+            this.lblEquipo.Click += new System.EventHandler(this.lblEquipo_Click);
             // 
             // label5
             // 
@@ -192,7 +193,7 @@
             // lblCE
             // 
             this.lblCE.AutoSize = true;
-            this.lblCE.Location = new System.Drawing.Point(1074, 372);
+            this.lblCE.Location = new System.Drawing.Point(1337, 364);
             this.lblCE.Name = "lblCE";
             this.lblCE.Size = new System.Drawing.Size(0, 16);
             this.lblCE.TabIndex = 20;
@@ -213,7 +214,7 @@
             this.rtxtTokens.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.rtxtTokens.Name = "rtxtTokens";
             this.rtxtTokens.ReadOnly = true;
-            this.rtxtTokens.Size = new System.Drawing.Size(406, 498);
+            this.rtxtTokens.Size = new System.Drawing.Size(722, 498);
             this.rtxtTokens.TabIndex = 4;
             this.rtxtTokens.TabStop = false;
             this.rtxtTokens.Text = "";
@@ -341,7 +342,7 @@
             // 
             // btnAnalizadorSintactico
             // 
-            this.btnAnalizadorSintactico.Location = new System.Drawing.Point(1077, 372);
+            this.btnAnalizadorSintactico.Location = new System.Drawing.Point(1340, 364);
             this.btnAnalizadorSintactico.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnAnalizadorSintactico.Name = "btnAnalizadorSintactico";
             this.btnAnalizadorSintactico.Size = new System.Drawing.Size(104, 68);

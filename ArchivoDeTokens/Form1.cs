@@ -188,8 +188,6 @@ namespace ArchivoDeTokens
             }
         }
 
-        // --- DESGLOSE DE CADA INSTRUCCIÓN SEGÚN TU GLC ---
-
         private void ParseIN01() { Match(TokenActual()); Match("ID"); Match("opa"); ParseARG1(); Match("FDL"); }
         private void ParseIN02()
         {
@@ -223,7 +221,7 @@ namespace ArchivoDeTokens
         private void ParseIN05()
         {
             Match(TokenActual()); Match("ce07");
-            Match("PR04"); Match("ID"); Match("opa"); ParseOPAR(); // ARG5
+            Match("PR4"); Match("ID"); Match("opa"); ParseOPAR(); // ARG5
             Match("ce18"); ParseCONDIC(); Match("ce18");
             Match("ID"); Match("opa"); ParseOPAR(); // INCRE
             Match("ce08"); Match("ce09"); ParseInstruccionesBloque(); Match("ce10");
@@ -266,9 +264,9 @@ namespace ArchivoDeTokens
             }
             Match("FDL");
         }
-        private void ParseIN12() { ParseCONDIC(); Match("PR20"); ParseCONDIC(); Match("FDL"); }
-        private void ParseIN13() { ParseCONDIC(); Match("PR21"); ParseCONDIC(); Match("FDL"); }
-        private void ParseIN14() { Match(TokenActual()); Match("ce07"); ParseCONDIC(); Match("ce08"); Match("FDL"); }
+        private void ParseIN12() { ParseCONDIC(); Match("PR20"); ParseCONDIC();}
+        private void ParseIN13() { ParseCONDIC(); Match("PR21"); ParseCONDIC();}
+        private void ParseIN14() { Match(TokenActual()); Match("ce07"); ParseCONDIC(); Match("ce08");}
         private void ParseIN15()
         { // CONDICIONAL SI / SINO
             Match(TokenActual()); Match("ce07"); ParseCONDIC(); Match("ce08"); Match("ce09"); ParseInstruccionesBloque(); Match("ce10");
@@ -295,7 +293,7 @@ namespace ArchivoDeTokens
             }
             if (TokenActual() == "PR25")
             { // LVC (Default)
-                Match("PR25"); ParseInstruccionesBloque(); Match("PR10");
+                Match("PR25"); Match("ce11"); ParseInstruccionesBloque(); Match("PR10");
                 if (TokenActual() == "FDL") Match("FDL");
             }
             Match("ce10");
@@ -398,7 +396,8 @@ namespace ArchivoDeTokens
         private void ParseOPAR()
         {
             ParseValorAritmetico();
-            while (TokenActual() == "OAR" || TokenActual() == "OPA+" || TokenActual() == "OPA-" || TokenActual() == "OPA*" || TokenActual() == "OPA/")
+            //while (TokenActual() == "OAR" || TokenActual() == "OPA+" || TokenActual() == "OPA-" || TokenActual() == "OPA*" || TokenActual() == "OPA/")
+            while (TokenActual() == "OA5" || TokenActual() == "OA1" || TokenActual() == "OA2" || TokenActual() == "OA3" || TokenActual() == "OA4")
             {
                 Match(TokenActual());
                 ParseValorAritmetico();
@@ -427,6 +426,7 @@ namespace ArchivoDeTokens
             string t = TokenActual();
             if (t.StartsWith("IDENT")) Match("ID");
             else if (t == "CNU" || t == "CN" || t == "CAD" || t == "PR16" || t == "PR17") Match(t);
+            else if (t == "OL2") ParseIN14();
             else throw new Exception($"Valor de condición no válido: {t}");
         }
 
@@ -467,7 +467,7 @@ namespace ArchivoDeTokens
 
                     // Validar si la línea contiene únicamente las palabras de control de bloque
                     string lineaLimpia = lineaLista.Trim();
-                    if (lineaLimpia == "INI" || lineaLimpia == "FIN" || lineaLista.EndsWith("{") || lineaLista.EndsWith("}"))
+                    if (lineaLimpia == "INI" || lineaLimpia == "FIN" || lineaLista.EndsWith("{") || lineaLista.EndsWith("}") || lineaLista.EndsWith(":")) // se agregaron los puntos
                     {
                         tokenFDL = ""; // No se requiere delimitador ni se genera token FDL
                     }
@@ -588,6 +588,10 @@ namespace ArchivoDeTokens
                             }
                             else if (matrizTransicion[int.Parse(celdaActual)]["FDC"] == "ACEPTA")
                             {
+                                if (matrizTransicion[int.Parse(celdaActual)]["CAT"] == "PR24")
+                                {
+
+                                }
                                 if (matrizTransicion[int.Parse(celdaActual)]["CAT"] == "IDVAL")
                                 {
                                     RegistrarSimbolo(contadorSimbolos++, valCadena);
@@ -999,6 +1003,11 @@ namespace ArchivoDeTokens
 
             // 3. Enviamos la cadena al motor Sintáctico
             IniciarAnalisisSintactico(tokensGenerados);
+        }
+
+        private void lblEquipo_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
