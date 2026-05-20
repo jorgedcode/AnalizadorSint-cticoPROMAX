@@ -68,50 +68,56 @@ namespace ArchivoDeTokens
 
         #region ANALIZADOR SINTÁCTICO (TOP-DOWN)
 
-        private int punteroSintactico = 0;
-        private List<string> tokensSintacticos = new List<string>();
-
-        public void IniciarAnalisisSintactico(string cadenaTokens)
+        public class TokenSintactico
         {
-            // 1. Limpiamos y estructuramos la cadena
-            tokensSintacticos = cadenaTokens.Split(new[] { ' ', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries).ToList();
-
-            // Normalizamos 'FDL' como 'del' según la GLC y 'ce7' como 'ce07'
-            for (int i = 0; i < tokensSintacticos.Count; i++)
-            {
-                if (tokensSintacticos[i] == "FDL") tokensSintacticos[i] = "FDL";
-                if (tokensSintacticos[i] == "ce7") tokensSintacticos[i] = "ce07";
-                if (tokensSintacticos[i] == "ce8") tokensSintacticos[i] = "ce08";
-                if (tokensSintacticos[i] == "ce9") tokensSintacticos[i] = "ce09";
-            }
-
-            punteroSintactico = 0;
-
-            try
-            {
-                ParsePrograma(); // Inicia la evaluación
-                MessageBox.Show("¡Análisis Sintáctico Exitoso!\nEl código cumple con todas las reglas gramaticales.", "Sintaxis Correcta", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Error de Sintaxis", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            public string Valor { get; set; }
+            public int Linea { get; set; }
         }
+
+        public class ErrorSintactico
+        {
+            public int Linea { get; set; }
+            public string Descripcion { get; set; }
+        }
+
+        public class ExcepcionSintactica : Exception
+        {
+            public ExcepcionSintactica(string msg) : base(msg) { }
+        }
+
+        private int punteroSintactico = 0;
+        private List<TokenSintactico> tokensSintacticosObj = new List<TokenSintactico>();
+        private List<ErrorSintactico> listaErroresSintacticos = new List<ErrorSintactico>();
+        private StringBuilder traduccionSintactica = new StringBuilder();
 
         // Retorna el token en la posición actual
         private string TokenActual()
         {
-            if (punteroSintactico < tokensSintacticos.Count)
-                return tokensSintacticos[punteroSintactico];
+            if (punteroSintactico < tokensSintacticosObj.Count)
+                return tokensSintacticosObj[punteroSintactico].Valor;
             return "EOF";
+        }
+
+        // Retorna la línea del token actual
+        private int LineaActual()
+        {
+            if (punteroSintactico < tokensSintacticosObj.Count)
+                return tokensSintacticosObj[punteroSintactico].Linea;
+            return tokensSintacticosObj.Count > 0 ? tokensSintacticosObj.Last().Linea : 0;
         }
 
         // Retorna el siguiente token (Lookahead)
         private string TokenSiguiente()
         {
-            if (punteroSintactico + 1 < tokensSintacticos.Count)
-                return tokensSintacticos[punteroSintactico + 1];
+            if (punteroSintactico + 1 < tokensSintacticosObj.Count)
+                return tokensSintacticosObj[punteroSintactico + 1].Valor;
             return "EOF";
+        }
+
+        // Método auxiliar para imprimir la traza gramatical
+        private void RegistrarTraduccion(string regla)
+        {
+            traduccionSintactica.AppendLine($"Línea {LineaActual()}: {regla}");
         }
 
         // Motor Principal: Verifica y avanza el puntero
@@ -120,9 +126,9 @@ namespace ArchivoDeTokens
             string actual = TokenActual();
 
             if (actual == "EOF")
-                throw new Exception($"Se llegó al final inesperadamente. Faltó: '{esperado}'");
+                throw new ExcepcionSintactica($"Se llegó al final inesperadamente. Faltó: '{esperado}'");
 
-            // Normalizaciones flexibles para tokens que varían
+            // Normalizaciones flexibles originales
             if (esperado == "ID" && actual.StartsWith("IDENT")) { punteroSintactico++; return; }
             if (esperado == "opa" && (actual == "opa" || actual == "OPA" || actual == "OPAS")) { punteroSintactico++; return; }
             if (esperado == "CNU" && (actual == "CNU" || actual == "CN")) { punteroSintactico++; return; }
@@ -133,16 +139,20 @@ namespace ArchivoDeTokens
             }
             else
             {
-                throw new Exception($"Error Sintáctico cerca del token #{punteroSintactico + 1}: Se esperaba '{esperado}', pero se encontró '{actual}'.");
+                throw new ExcepcionSintactica($"Se esperaba '{esperado}', pero se encontró '{actual}'.");
             }
         }
 
-        // ================= REGLAS DE LA GLC =================
+        // ================= REGLAS DE LA GLC (CON TU LÓGICA ORIGINAL) =================
 
         private void ParsePrograma()
         {
+            RegistrarTraduccion("INICIO_PROGRAMA -> PR1");
             Match("PR1"); // INI
+
             ParseInstruccionesBloque(); // INSTRUCCIONES
+
+            RegistrarTraduccion("FIN_PROGRAMA -> PR2");
             Match("PR2"); // FIN
         }
 
@@ -151,7 +161,41 @@ namespace ArchivoDeTokens
             // Ejecuta instrucciones mientras no se llegue a cierres de bloque o fin de programa
             while (TokenActual() != "PR2" && TokenActual() != "ce10" && TokenActual() != "PR10" && TokenActual() != "EOF")
             {
-                ParseInstruccion();
+                try
+                {
+                    ParseInstruccion();
+                }
+                catch (ExcepcionSintactica ex)
+                {
+                    // Acumular error y recuperar el parser (Modo Pánico)
+                    listaErroresSintacticos.Add(new ErrorSintactico { Linea = LineaActual(), Descripcion = ex.Message });
+                    RecuperarModoPanico();
+                }
+            }
+        }
+
+        private void RecuperarModoPanico()
+        {
+            // Avanzamos hasta encontrar un punto de sincronización seguro
+            while (TokenActual() != "FDL" && TokenActual() != "ce10" && TokenActual() != "ce09" && TokenActual() != "EOF")
+            {
+                punteroSintactico++;
+            }
+
+            if (TokenActual() == "FDL")
+            {
+                punteroSintactico++; // Consumimos el fin de línea y seguimos
+            }
+            else if (TokenActual() == "ce09")
+            {
+                // Si el error ocurrió al declarar un CICLO o SI y caímos directamente en su llave de apertura '{'
+                // debemos consumirla y evaluar su bloque interno para que la llave de cierre '}' no rompa el programa principal.
+                punteroSintactico++;
+                ParseInstruccionesBloque();
+                if (TokenActual() == "ce10")
+                {
+                    punteroSintactico++; // Consumimos la llave de cierre huérfana
+                }
             }
         }
 
@@ -159,7 +203,7 @@ namespace ArchivoDeTokens
         {
             string t = TokenActual();
 
-            // Ruteador Principal de Instrucciones
+            // Ruteador Principal de Instrucciones original
             if (t == "PR3" || t == "PR03") ParseIN01();
             else if (t == "PR4" || t == "PR04") ParseIN02();
             else if (t == "PR5" || t == "PR05") ParseIN03();
@@ -184,124 +228,199 @@ namespace ArchivoDeTokens
                 if (next == "OA5" || next == "OA05") ParseIN04();
                 else if (next == "OL1") ParseIN12();
                 else if (next == "OL3") ParseIN13();
-                else throw new Exception($"Estructura no reconocida comenzando con '{t}'");
+                else throw new ExcepcionSintactica($"Estructura no reconocida comenzando con '{t}'");
             }
             else
             {
-                throw new Exception($"No se reconoce el inicio de la instrucción: '{t}'");
+                throw new ExcepcionSintactica($"No se reconoce el inicio de la instrucción: '{t}'");
             }
         }
 
-        private void ParseIN01() { Match(TokenActual()); Match("ID"); Match("opa"); ParseARG1(); Match("FDL"); }
+        private void ParseIN01()
+        {
+            RegistrarTraduccion("IN01 -> PR03 ID opa ARG1 FDL");
+            Match(TokenActual()); Match("ID"); Match("opa"); ParseARG1(); Match("FDL");
+        }
+
         private void ParseIN02()
         {
+            string msg = "IN02 -> PR04 ID";
             Match(TokenActual()); Match("ID");
-            if (TokenActual().StartsWith("OPA") || TokenActual() == "opa") { Match("opa"); ParseOPAR(); }
+            if (TokenActual().StartsWith("OPA") || TokenActual() == "opa") { Match("opa"); ParseOPAR(); msg += " [OPA OPAR]"; }
+            msg += " FDL";
+            RegistrarTraduccion(msg);
             Match("FDL");
         }
+
         private void ParseIN03()
         {
+            string msg = "IN03 -> PR05 ID";
             Match(TokenActual()); Match("ID");
-            if (TokenActual().StartsWith("OPA") || TokenActual() == "opa") { Match("opa"); ParseOPAR(); }
+            if (TokenActual().StartsWith("OPA") || TokenActual() == "opa") { Match("opa"); ParseOPAR(); msg += " [OPA OPAR]"; }
+            msg += " FDL";
+            RegistrarTraduccion(msg);
             Match("FDL");
         }
-        //private void ParseIN04() { ParseARG4(); Match(TokenActual()); ParseARG4(); Match("del"); }
+
         private void ParseIN04()
         {
+            RegistrarTraduccion("IN04 -> ARG4 PR6 ARG4 FDL");
             ParseARG4();
-
             if (TokenActual() == "PR6" || TokenActual() == "PR06")
             {
                 Match(TokenActual());
             }
             else
             {
-                throw new Exception($"Se esperaba PR6 (ALA) entre los argumentos, se encontró {TokenActual()}");
+                throw new ExcepcionSintactica($"Se esperaba PR6 (ALA) entre los argumentos, se encontró {TokenActual()}");
             }
-
             ParseARG4();
             Match("FDL");
         }
+
         private void ParseIN05()
         {
+            RegistrarTraduccion("IN05 (PARA) -> PR07 ce07 PR4 ID opa ARG2 ce18 CONDIC ce18 INCRE ce08 ce09 INSTR ce10");
             Match(TokenActual()); Match("ce07");
-            Match("PR4"); Match("ID"); Match("opa"); ParseOPAR(); // ARG5
+            Match("PR4"); Match("ID"); Match("opa"); ParseARG2(); // ARG5 original
             Match("ce18"); ParseCONDIC(); Match("ce18");
-            Match("ID"); Match("opa"); ParseOPAR(); // INCRE
+            Match("ID"); Match("opa"); ParseOPAR(); // INCRE original
             Match("ce08"); Match("ce09"); ParseInstruccionesBloque(); Match("ce10");
         }
-        private void ParseIN06() { Match(TokenActual()); Match("ce07"); ParseCONDIC(); Match("ce08"); Match("ce09"); ParseInstruccionesBloque(); Match("ce10"); }
-        private void ParseIN07() { Match(TokenActual()); Match("ce07"); Match("ID"); Match("ce08"); Match("FDL"); }
+
+        private void ParseIN06()
+        {
+            RegistrarTraduccion("IN06 (MIENTRAS) -> PR08 ce07 CONDIC ce08 ce09 INSTR ce10");
+            Match(TokenActual()); Match("ce07"); ParseCONDIC(); Match("ce08"); Match("ce09"); ParseInstruccionesBloque(); Match("ce10");
+        }
+
+        private void ParseIN07()
+        {
+            RegistrarTraduccion("IN07 (ENTRADA) -> PR13 ce07 ID ce08 FDL");
+            Match(TokenActual()); Match("ce07"); Match("ID"); Match("ce08"); Match("FDL");
+        }
+
         private void ParseIN08()
         {
+            RegistrarTraduccion("IN08 (IMPRIMIR) -> PR14 ce07 ARG7 ce08 FDL");
             Match(TokenActual()); Match("ce07");
             string t = TokenActual();
             if (t.StartsWith("IDENT")) Match("ID");
             else if (t == "CNU" || t == "CN" || t == "CAD" || t == "CAR") Match(t);
-            else throw new Exception($"Argumento no válido para VA: {t}");
+            else throw new ExcepcionSintactica($"Argumento no válido para VA: {t}");
             Match("ce08"); Match("FDL");
         }
+
         private void ParseIN09()
         {
+            string msg = "IN09 (BOOL) -> PR15 ID";
+            
             Match(TokenActual()); Match("ID");
             if (TokenActual().StartsWith("OPA") || TokenActual() == "opa")
             {
                 Match("opa");
                 if (TokenActual() == "PR16" || TokenActual() == "PR17") Match(TokenActual());
                 else if (TokenActual() == "OL2") ParseIN14();
-                else throw new Exception("Se esperaba PR16 o PR17 para booleano.");
+                else throw new ExcepcionSintactica("Se esperaba PR16 o PR17 para booleano.");
+                msg += " [opa PR16 | PR17 | OL2]";
             }
+            msg += " FDL";
+            RegistrarTraduccion(msg);
             Match("FDL");
         }
+
         private void ParseIN10()
         {
+            string msg = "IN10 (CADENA) -> PR18 ID";
             Match(TokenActual()); Match("ID");
-            if (TokenActual().StartsWith("OPA") || TokenActual() == "opa") { Match("opa"); Match("CAD"); }
+            if (TokenActual().StartsWith("OPA") || TokenActual() == "opa") { Match("opa"); Match("CAD"); msg += " [opa CAD]"; }
+            msg += " FDL";
+            RegistrarTraduccion(msg);
             Match("FDL");
         }
+
         private void ParseIN11()
         {
+            string msg = "IN11 (CARACTER) -> PR19 ID";
             Match(TokenActual()); Match("ID");
             if (TokenActual().StartsWith("OPA") || TokenActual() == "opa")
             {
                 Match("opa");
                 if (TokenActual() == "CAR" || TokenActual() == "CAD") Match(TokenActual());
+                msg += " [opa CAR|CAD]";
             }
+            msg += " FDL";
+            RegistrarTraduccion(msg);
             Match("FDL");
         }
-        private void ParseIN12() { ParseCONDIC(); Match("PR20"); ParseCONDIC();}
-        private void ParseIN13() { ParseCONDIC(); Match("PR21"); ParseCONDIC();}
-        private void ParseIN14() { Match(TokenActual()); Match("ce07"); ParseCONDIC(); Match("ce08");}
+
+        private void ParseIN12() { RegistrarTraduccion("IN12 -> CONDIC PR20 CONDIC"); ParseCONDIC(); Match("PR20"); ParseCONDIC(); }
+        private void ParseIN13() { RegistrarTraduccion("IN13 -> CONDIC PR21 CONDIC"); ParseCONDIC(); Match("PR21"); ParseCONDIC(); }
+        private void ParseIN14() { RegistrarTraduccion("IN14 -> OL2 ce07 CONDIC ce08"); Match(TokenActual()); Match("ce07"); ParseCONDIC(); Match("ce08"); }
+
         private void ParseIN15()
-        { // CONDICIONAL SI / SINO
+        {
+            string msg = "IN15 (SI";
             Match(TokenActual()); Match("ce07"); ParseCONDIC(); Match("ce08"); Match("ce09"); ParseInstruccionesBloque(); Match("ce10");
             if (TokenActual() == "PR12")
-            { // SINO
+            {
                 Match("PR12"); Match("ce09"); ParseInstruccionesBloque(); Match("ce10");
+                msg += "-NO";
             }
+            msg += ") -> PR11 ce07 CONDIC ce08 ce09 INSTR ce10 [PR12 ce09 INSTR ce10]";
+            RegistrarTraduccion(msg);
         }
+
         private void ParseIN16()
-        { // VE (DO-WHILE)
+        {
+            RegistrarTraduccion("IN16 (HAZ-MIENTRAS) -> PR9 ce09 INSTR ce10 PR8 ce07 CONDIC ce08 FDL");
             Match(TokenActual()); Match("ce09"); ParseInstruccionesBloque(); Match("ce10");
             if (TokenActual() == "PR8" || TokenActual() == "PR08") Match(TokenActual());
             Match("ce07"); ParseCONDIC(); Match("ce08"); Match("FDL");
         }
+
         private void ParseIN17()
-        { // NINT / SWITCH
+        {
+            RegistrarTraduccion("IN17 (SWITCH) -> PR23 ce07 ID ce08 ce09 [PR24 ARG12 ce11 INSTR PR10 FDL] [PR25 ce11 INSTR PR10 FDL] ce10");
             Match(TokenActual()); Match("ce07"); Match("ID"); Match("ce08"); Match("ce09");
             while (TokenActual() == "PR24")
-            { // CASOS
+            {
                 Match("PR24");
                 string t = TokenActual();
                 if (t == "CNU" || t == "CN" || t == "CAD" || t == "CAR") Match(t);
                 Match("ce11"); ParseInstruccionesBloque(); Match("PR10"); Match("FDL");
             }
             if (TokenActual() == "PR25")
-            { // LVC (Default)
+            {
                 Match("PR25"); Match("ce11"); ParseInstruccionesBloque(); Match("PR10");
                 if (TokenActual() == "FDL") Match("FDL");
             }
             Match("ce10");
+        }
+
+        private void ParseAsignacion()
+        {
+            RegistrarTraduccion("ASIGNACION -> ID opa EXPRESION FDL");
+            if (TokenActual().StartsWith("IDENT") || TokenActual() == "ID")
+            {
+                Match(TokenActual()); // Consume el identificador
+            }
+            else
+            {
+                throw new ExcepcionSintactica("Se esperaba un identificador para iniciar la asignación.");
+            }
+
+            if (TokenActual() == "OPA" || TokenActual() == "opa")
+            {
+                Match(TokenActual()); // Consume el '='
+            }
+            else
+            {
+                throw new ExcepcionSintactica("Se esperaba el operador de asignación '='.");
+            }
+
+            ParseExpresion();
+            Match("FDL");
         }
 
         // --- EVALUADORES DE EXPRESIONES (OPAR y CONDIC) ---
@@ -391,37 +510,6 @@ namespace ArchivoDeTokens
                 ParseARG13(); // Recursividad: Se llama a sí mismo por si hay más CASOS
             }
             // Si no es PR24, entra a Épsilon (no hace nada y sale)
-        }
-
-        private void ParseAsignacion()
-        {
-            // 1. Validamos que inicie con un identificador (ej. IDENT1, IDENT2)
-            if (TokenActual().StartsWith("IDENT") || TokenActual() == "ID")
-            {
-                Match(TokenActual()); // Consume el identificador
-            }
-            else
-            {
-                throw new Exception("Se esperaba un identificador para iniciar la asignación.");
-                return;
-            }
-
-            // 2. Validamos el operador de asignación (ej. ce10 si mapeaste el '=' ahí, o "OAS")
-            if (TokenActual() == "OPA" || TokenActual() == "opa")
-            {
-                Match(TokenActual()); // Consume el '='
-            }
-            else
-            {
-                throw new Exception("Se esperaba el operador de asignación '='.");
-                return;
-            }
-
-            // La regla que acepta CUALQUIER valor
-            ParseExpresion();
-
-            // 4. Cerramos con el fin de línea
-            Match("FDL");
         }
 
         private void ParseExpresion()
@@ -1107,11 +1195,63 @@ namespace ArchivoDeTokens
                 return;
             }
 
-            // 2. Extraemos los tokens generados y quitamos los saltos de línea visuales
-            string tokensGenerados = rtxtTokens.Text.Replace("\n", " ");
+            // 1. Limpiamos interfaz y estructuras
+            dtgErrsSint.Rows.Clear();
+            rtxtAnSint.Clear(); // Limpiamos el RichTextBox de la traza
+            listaErroresSintacticos.Clear();
+            traduccionSintactica.Clear();
+            tokensSintacticosObj.Clear();
+            punteroSintactico = 0;
 
-            // 3. Enviamos la cadena al motor Sintáctico
-            IniciarAnalisisSintactico(tokensGenerados);
+            // 2. Extraemos los tokens línea por línea manteniendo el control de en qué línea estaban
+            string[] lineas = rtxtTokens.Lines;
+            for (int i = 0; i < lineas.Length; i++)
+            {
+                string lineaLimpia = lineas[i].Trim();
+                if (string.IsNullOrEmpty(lineaLimpia)) continue;
+
+                string[] toks = lineaLimpia.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+
+                // Normalizaciones solicitadas (manteniendo tus tokens del lexer original)
+                foreach (var t in toks)
+                {
+                    string tokenNormalizado = t;
+                    if (tokenNormalizado == "ce7") tokenNormalizado = "ce07";
+                    if (tokenNormalizado == "ce8") tokenNormalizado = "ce08";
+                    if (tokenNormalizado == "ce9") tokenNormalizado = "ce09";
+
+                    tokensSintacticosObj.Add(new TokenSintactico { Valor = tokenNormalizado, Linea = i + 1 });
+                }
+            }
+
+            // 3. Iniciar evaluación Top-Down
+            try
+            {
+                ParsePrograma();
+
+                // 4. Llenamos el RichTextBox con la traducción de las reglas en ejecución
+                rtxtAnSint.Text = traduccionSintactica.ToString();
+
+                // 5. Validamos si el arreglo de Errores recolectados está limpio o tiene datos
+                if (listaErroresSintacticos.Count > 0)
+                {
+                    foreach (var err in listaErroresSintacticos)
+                    {
+                        dtgErrsSint.Rows.Add(err.Linea, err.Descripcion);
+                    }
+                    MessageBox.Show($"El análisis finalizó, pero se encontraron {listaErroresSintacticos.Count} errores sintácticos.", "Errores Encontrados", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+                else
+                {
+                    MessageBox.Show("¡Análisis Sintáctico Exitoso!\nEl código cumple con todas las reglas gramaticales.", "Sintaxis Correcta", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                // En caso de un fallo catastrófico (EOF inesperado sin punto de recuperación)
+                dtgErrsSint.Rows.Add(LineaActual(), ex.Message);
+                MessageBox.Show("El analizador se detuvo por un error estructural no recuperable.", "Fallo Crítico", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void lblEquipo_Click(object sender, EventArgs e)
