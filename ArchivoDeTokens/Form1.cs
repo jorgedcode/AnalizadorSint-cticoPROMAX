@@ -96,6 +96,10 @@ namespace ArchivoDeTokens
             ["PR3"] = "NVO",
             ["PR4"] = "COMP",
             ["PR5"] = "FLOT",
+            ["OA1"] = "+",
+            ["OA2"] = "-",
+            ["OA3"] = "*",
+            ["OA4"] = "/",
             ["OA5"] = "ALA",
             ["PR7"] = "CICLO",
             ["PR8"] = "MTS",
@@ -115,8 +119,12 @@ namespace ArchivoDeTokens
             ["PR22"] = "NAH",
             ["PR23"] = "NINT",
             ["PR24"] = "CASO",
-            ["PR25"] = "LVC"
-
+            ["PR25"] = "LVC",
+            ["ce07"] = "(",
+            ["ce08"] = ")",
+            ["ce09"] = "{",
+            ["ce10"] = "}",
+            ["ce11"] = ":",
         };
 
 
@@ -166,7 +174,7 @@ namespace ArchivoDeTokens
             }
             else
             {
-                if (esperado.StartsWith("PR") || esperado.StartsWith("OA"))
+                if (esperado.StartsWith("PR") || esperado.StartsWith("OA") || esperado.StartsWith("ce"))
                 {
                     throw new ExcepcionSintactica($"Se esperaba '{palabrasReservadas[esperado]}', pero se encontró '{actual}'.");
                 }
