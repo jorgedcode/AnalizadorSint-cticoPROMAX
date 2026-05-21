@@ -47,6 +47,8 @@
             this.rtxTokens = new System.Windows.Forms.RichTextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.DgvErrores = new System.Windows.Forms.DataGridView();
+            this.linea = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.error = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.label4 = new System.Windows.Forms.Label();
             this.DgvSimbolos = new System.Windows.Forms.DataGridView();
             this.numero = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -55,13 +57,13 @@
             this.valor = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.btnAnalizadorSintactico = new System.Windows.Forms.Button();
             this.dtgErrsSint = new System.Windows.Forms.DataGridView();
+            this.LineaSintáctico = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ErrorSintáctico = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.label7 = new System.Windows.Forms.Label();
             this.lblAnSint = new System.Windows.Forms.Label();
             this.rtxtAnSint = new System.Windows.Forms.RichTextBox();
-            this.linea = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.error = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.LineaSintáctico = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ErrorSintáctico = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.rtxtAnSintSINO = new System.Windows.Forms.RichTextBox();
+            this.label8 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.DgvErrores)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.DgvSimbolos)).BeginInit();
@@ -272,6 +274,23 @@
             this.DgvErrores.TabIndex = 5;
             this.DgvErrores.TabStop = false;
             // 
+            // linea
+            // 
+            this.linea.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.ColumnHeader;
+            this.linea.HeaderText = "Línea";
+            this.linea.MinimumWidth = 6;
+            this.linea.Name = "linea";
+            this.linea.ReadOnly = true;
+            this.linea.Width = 69;
+            // 
+            // error
+            // 
+            this.error.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.error.HeaderText = "Error";
+            this.error.MinimumWidth = 6;
+            this.error.Name = "error";
+            this.error.ReadOnly = true;
+            // 
             // label4
             // 
             this.label4.AutoSize = true;
@@ -358,49 +377,6 @@
             this.dtgErrsSint.Size = new System.Drawing.Size(732, 191);
             this.dtgErrsSint.TabIndex = 22;
             // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(28, 762);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(177, 16);
-            this.label7.TabIndex = 23;
-            this.label7.Text = "Tabla de Errores Sintácticos";
-            // 
-            // lblAnSint
-            // 
-            this.lblAnSint.AutoSize = true;
-            this.lblAnSint.Location = new System.Drawing.Point(999, 762);
-            this.lblAnSint.Name = "lblAnSint";
-            this.lblAnSint.Size = new System.Drawing.Size(115, 16);
-            this.lblAnSint.TabIndex = 24;
-            this.lblAnSint.Text = "Análisis Sintáctico";
-            // 
-            // rtxtAnSint
-            // 
-            this.rtxtAnSint.Location = new System.Drawing.Point(1002, 781);
-            this.rtxtAnSint.Name = "rtxtAnSint";
-            this.rtxtAnSint.Size = new System.Drawing.Size(534, 199);
-            this.rtxtAnSint.TabIndex = 25;
-            this.rtxtAnSint.Text = "";
-            // 
-            // linea
-            // 
-            this.linea.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.ColumnHeader;
-            this.linea.HeaderText = "Línea";
-            this.linea.MinimumWidth = 6;
-            this.linea.Name = "linea";
-            this.linea.ReadOnly = true;
-            this.linea.Width = 69;
-            // 
-            // error
-            // 
-            this.error.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.error.HeaderText = "Error";
-            this.error.MinimumWidth = 6;
-            this.error.Name = "error";
-            this.error.ReadOnly = true;
-            // 
             // LineaSintáctico
             // 
             this.LineaSintáctico.HeaderText = "Línea";
@@ -417,6 +393,49 @@
             this.ErrorSintáctico.Name = "ErrorSintáctico";
             this.ErrorSintáctico.ReadOnly = true;
             // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(28, 762);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(177, 16);
+            this.label7.TabIndex = 23;
+            this.label7.Text = "Tabla de Errores Sintácticos";
+            // 
+            // lblAnSint
+            // 
+            this.lblAnSint.AutoSize = true;
+            this.lblAnSint.Location = new System.Drawing.Point(759, 762);
+            this.lblAnSint.Name = "lblAnSint";
+            this.lblAnSint.Size = new System.Drawing.Size(115, 16);
+            this.lblAnSint.TabIndex = 24;
+            this.lblAnSint.Text = "Análisis Sintáctico";
+            // 
+            // rtxtAnSint
+            // 
+            this.rtxtAnSint.Location = new System.Drawing.Point(762, 781);
+            this.rtxtAnSint.Name = "rtxtAnSint";
+            this.rtxtAnSint.Size = new System.Drawing.Size(513, 199);
+            this.rtxtAnSint.TabIndex = 25;
+            this.rtxtAnSint.Text = "";
+            // 
+            // rtxtAnSintSINO
+            // 
+            this.rtxtAnSintSINO.Location = new System.Drawing.Point(1291, 781);
+            this.rtxtAnSintSINO.Name = "rtxtAnSintSINO";
+            this.rtxtAnSintSINO.Size = new System.Drawing.Size(492, 199);
+            this.rtxtAnSintSINO.TabIndex = 27;
+            this.rtxtAnSintSINO.Text = "";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(1288, 762);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(185, 16);
+            this.label8.TabIndex = 26;
+            this.label8.Text = "Análisis Sintáctico de SI-SINO";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -424,6 +443,8 @@
             this.AutoSize = true;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.ClientSize = new System.Drawing.Size(1795, 992);
+            this.Controls.Add(this.rtxtAnSintSINO);
+            this.Controls.Add(this.label8);
             this.Controls.Add(this.rtxtAnSint);
             this.Controls.Add(this.lblAnSint);
             this.Controls.Add(this.label7);
@@ -451,7 +472,7 @@
             this.Controls.Add(this.btnLexico);
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "Form1";
-            this.Text = "Analizador Léxico";
+            this.Text = "Analizador Sintáctico";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Form1_KeyDown);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
@@ -497,6 +518,8 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn error;
         private System.Windows.Forms.DataGridViewTextBoxColumn LineaSintáctico;
         private System.Windows.Forms.DataGridViewTextBoxColumn ErrorSintáctico;
+        private System.Windows.Forms.RichTextBox rtxtAnSintSINO;
+        private System.Windows.Forms.Label label8;
     }
 }
 

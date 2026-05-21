@@ -26,7 +26,7 @@ namespace ArchivoDeTokens
         {
             InitializeComponent();
             CargarMatrizEnMemoria();
-            lblEquipo.Text = "Equipo\nHiram García Guerra. #23100161\nJorge Arturo Mata Camacho. #C21100514\nReynaldo Daniel Reyes Parra. #23100202\n\nVersión: 1.2";
+            lblEquipo.Text = "Equipo\nHiram García Guerra. #23100161\nJorge Arturo Mata Camacho. #C21100514\nReynaldo Daniel Reyes Parra. #23100202\n\nVersión: 1.3";
             rtxTokens.Text = "1\n";
             rtxLineasCodigo.Text = "1\n";
         }
@@ -89,6 +89,21 @@ namespace ArchivoDeTokens
         private List<TokenSintactico> tokensSintacticosObj = new List<TokenSintactico>();
         private List<ErrorSintactico> listaErroresSintacticos = new List<ErrorSintactico>();
         private StringBuilder traduccionSintactica = new StringBuilder();
+        private StringBuilder trazaTopDown = new StringBuilder();
+        private List<string> pasosTraza = new List<string>();
+        private void RegistrarPasoTopDown(string paso)
+        {
+            pasosTraza.Add(paso);
+        }
+        private string ObtenerTokensConsumidos(int inicio, int fin)
+        {
+            List<string> consumidos = new List<string>();
+            for (int i = inicio; i < fin && i < tokensSintacticosObj.Count; i++)
+            {
+                consumidos.Add(tokensSintacticosObj[i].Valor);
+            }
+            return string.Join(" ", consumidos);
+        }
         Dictionary<string, string> palabrasReservadas = new Dictionary<string, string>
         {
             ["PR1"] = "INI",
@@ -398,6 +413,73 @@ namespace ArchivoDeTokens
 
         private void ParseIN15()
         {
+            RegistrarPasoTopDown("\n=== INICIANDO REDUCCIÓN TOP-DOWN PARA SI/SINO ===");
+
+            string tPR11 = TokenActual();
+            Match("PR11");
+            string tParAb = TokenActual();
+            Match("ce07");
+
+            RegistrarPasoTopDown($"1) {tPR11} {tParAb} ... (Evaluando condición interior)");
+
+            // Capturamos dónde empieza la condición
+            int inicioCondic = punteroSintactico;
+            ParseCONDIC(); // Descendemos
+            int finCondic = punteroSintactico; // Capturamos dónde terminó
+
+            // Extraemos los tokens exactos que formaron la condición
+            string tokensCondic = ObtenerTokensConsumidos(inicioCondic, finCondic);
+            RegistrarPasoTopDown($"   -> Los tokens [ {tokensCondic} ] se reducen a: CONDIC");
+            RegistrarPasoTopDown($"2) {tPR11} {tParAb} CONDIC ...");
+
+            string tParCe = TokenActual();
+            Match("ce08");
+            string tLlaAb = TokenActual();
+            Match("ce09");
+
+            RegistrarPasoTopDown($"3) {tPR11} {tParAb} CONDIC {tParCe} {tLlaAb} ... (Evaluando bloque interno)");
+
+            int inicioInstr = punteroSintactico;
+            ParseInstruccionesBloque();
+            int finInstr = punteroSintactico;
+
+            string tokensInstr = ObtenerTokensConsumidos(inicioInstr, finInstr);
+            RegistrarPasoTopDown($"   -> Los tokens [ {tokensInstr} ] se reducen a: INSTR");
+            RegistrarPasoTopDown($"4) {tPR11} {tParAb} CONDIC {tParCe} {tLlaAb} INSTR ...");
+
+            string tLlaCe = TokenActual();
+            Match("ce10");
+
+            RegistrarPasoTopDown($"5) {tPR11} {tParAb} CONDIC {tParCe} {tLlaAb} INSTR {tLlaCe}");
+            RegistrarPasoTopDown("6) ---> Se reduce a: IN15 (Estructura SI completada)");
+
+            if (TokenActual() == "PR12")
+            {
+                RegistrarPasoTopDown("\n--- EXTENSIÓN SINO DETECTADA ---");
+                string tPR12 = TokenActual();
+                Match("PR12");
+                string tLlaAbSino = TokenActual();
+                Match("ce09");
+
+                RegistrarPasoTopDown($"7) {tPR12} {tLlaAbSino} ... (Evaluando bloque SINO)");
+
+                int inicioInstrSino = punteroSintactico;
+                ParseInstruccionesBloque();
+                int finInstrSino = punteroSintactico;
+
+                string tokensInstrSino = ObtenerTokensConsumidos(inicioInstrSino, finInstrSino);
+                RegistrarPasoTopDown($"   -> Los tokens [ {tokensInstrSino} ] se reducen a: INSTR");
+
+                string tLlaCeSino = TokenActual();
+                Match("ce10");
+
+                RegistrarPasoTopDown($"8) {tPR12} {tLlaAbSino} INSTR {tLlaCeSino}");
+                RegistrarPasoTopDown("9) ---> Se reduce a: IN15 (Estructura SI-SINO completada)");
+            }
+        }
+        /*
+        private void ParseIN15()
+        {
             string msg = "IN15 (SI";
             Match(TokenActual()); Match("ce07"); ParseCONDIC(); Match("ce08"); Match("ce09"); ParseInstruccionesBloque(); Match("ce10");
             if (TokenActual() == "PR12")
@@ -408,6 +490,7 @@ namespace ArchivoDeTokens
             msg += ") -> PR11 ce07 CONDIC ce08 ce09 INSTR ce10 [PR12 ce09 INSTR ce10]";
             RegistrarTraduccion(msg);
         }
+        */
 
         private void ParseIN16()
         {
@@ -1214,7 +1297,22 @@ namespace ArchivoDeTokens
         {
         }
 
-        private void btnAnalizadorSintactico_Click(object sender, EventArgs e)
+        private async Task MostrarTrazaAnimada()
+        {
+            rtxtAnSintSINO.Clear();
+            foreach (string paso in pasosTraza)
+            {
+                rtxtAnSintSINO.AppendText(paso + "\n");
+                // Hacemos que el RichTextBox haga scroll automático hacia abajo
+                rtxtAnSintSINO.SelectionStart = rtxtAnSintSINO.Text.Length;
+                rtxtAnSintSINO.ScrollToCaret();
+
+                // Pausa de 2000 milisegundos (2 segundos) sin trabar el programa
+                await Task.Delay(2000);
+            }
+        }
+
+        private async void btnAnalizadorSintactico_Click(object sender, EventArgs e)
         {
             if (contE > 0)
             {
@@ -1235,6 +1333,8 @@ namespace ArchivoDeTokens
             traduccionSintactica.Clear();
             tokensSintacticosObj.Clear();
             punteroSintactico = 0;
+            rtxtAnSintSINO.Clear();
+            pasosTraza.Clear();
 
             // 2. Extraemos los tokens línea por línea manteniendo el control de en qué línea estaban
             string[] lineas = rtxtTokens.Lines;
@@ -1264,6 +1364,8 @@ namespace ArchivoDeTokens
 
                 // 4. Llenamos el RichTextBox con la traducción de las reglas en ejecución
                 rtxtAnSint.Text = traduccionSintactica.ToString();
+                rtxtAnSint.Text = traduccionSintactica.ToString();
+                rtxtAnSintSINO.Text = trazaTopDown.ToString();
 
                 // 5. Validamos si el arreglo de Errores recolectados está limpio o tiene datos
                 if (listaErroresSintacticos.Count > 0)
@@ -1277,6 +1379,7 @@ namespace ArchivoDeTokens
                 else
                 {
                     MessageBox.Show("¡Análisis Sintáctico Exitoso!\nEl código cumple con todas las reglas gramaticales.", "Sintaxis Correcta", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    await MostrarTrazaAnimada();
                 }
             }
             catch (Exception ex)
