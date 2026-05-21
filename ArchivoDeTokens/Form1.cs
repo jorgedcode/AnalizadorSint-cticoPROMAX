@@ -778,11 +778,47 @@ namespace ArchivoDeTokens
                     string lineaLista = lineaCodActual.TrimEnd();
                     string tokenFDL = "";
 
-                    // Validar si la línea contiene únicamente las palabras de control de bloque
-                    string lineaLimpia = lineaLista.Trim();
-                    if (lineaLimpia == "INI" || lineaLimpia == "FIN" || lineaLista.EndsWith("{") || lineaLista.EndsWith("}") || lineaLista.EndsWith(":")) // se agregaron los puntos
+                    bool enComillas = false;
+                    int indiceComentario = -1;
+                    for (int i = 0; i < lineaCodActual.Length; i++)
                     {
-                        tokenFDL = ""; // No se requiere delimitador ni se genera token FDL
+                        if (lineaCodActual[i] == '"') enComillas = !enComillas;
+                        else if (lineaCodActual[i] == '#' && !enComillas)
+                        {
+                            indiceComentario = i;
+                            break;
+                        }
+                    }
+
+                    bool tieneComentario = false;
+                    if (indiceComentario >= 0)
+                    {
+                        lineaCodActual = lineaCodActual.Substring(0, indiceComentario);
+                        tieneComentario = true; // Guardamos bandera para imprimir COM después
+                    }
+
+                    lineaLista = lineaCodActual.TrimEnd();
+                    string lineaLimpia = lineaLista.Trim();
+                     tokenFDL = "";
+
+                    // Si la línea era solo un comentario, ahora estará vacía. La saltamos.
+                    if (string.IsNullOrEmpty(lineaLimpia))
+                    {
+                        if (tieneComentario)
+                        {
+                            filasDeTokens.Add("COM"); // Imprimimos el token COM solitario
+                        }
+                        else
+                        {
+                            filasDeTokens.Add("");
+                        }
+                        continue;
+                    }
+
+                    // Validar si la línea contiene únicamente palabras de control
+                    if (lineaLimpia == "INI" || lineaLimpia == "FIN" || lineaLista.EndsWith("{") || lineaLista.EndsWith("}") || lineaLista.EndsWith(":"))
+                    {
+                        tokenFDL = "";
                     }
                     else if (!lineaLista.EndsWith("~"))
                     {
@@ -956,6 +992,11 @@ namespace ArchivoDeTokens
                     tokens.TrimEnd(' ');
                     tokens += "\n";
                     tokensDeLinea += tokenFDL;
+                    if (tieneComentario)
+                    {
+                        tokensDeLinea += "COM";
+                    }
+
                     comentario = false;
                     filasDeTokens.Add(tokensDeLinea.TrimEnd());
                 }
@@ -1348,6 +1389,7 @@ namespace ArchivoDeTokens
                 // Normalizaciones solicitadas (manteniendo tus tokens del lexer original)
                 foreach (var t in toks)
                 {
+                    if (t == "COM") continue;
                     string tokenNormalizado = t;
                     if (tokenNormalizado == "ce7") tokenNormalizado = "ce07";
                     if (tokenNormalizado == "ce8") tokenNormalizado = "ce08";
