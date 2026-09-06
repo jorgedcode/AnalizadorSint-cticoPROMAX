@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
@@ -298,21 +298,79 @@ namespace ArchivoDeTokens
         private void ParseIN02()
         {
             string msg = "IN02 -> PR04 ID";
-            Match(TokenActual()); Match("ID");
-            if (TokenActual().StartsWith("OPA") || TokenActual() == "opa") { Match("opa"); ParseOPAR(); msg += " [OPA OPAR]"; }
-            msg += " FDL";
-            RegistrarTraduccion(msg);
+            Match(TokenActual()); 
+            string tokenVar = TokenActual();
+            Match("ID");
+            
+            Simbolo sim = ObtenerSimboloPorToken(tokenVar);
+            if (sim != null) sim.Tipo = "COMP";
+
+            if (TokenActual().StartsWith("OPA") || TokenActual() == "opa") 
+            { 
+                Match(TokenActual()); 
+                NodoExpresion expr = ParseOPAR(); 
+                
+                string tipoExpr = InferirTipo(expr);
+                if (tipoExpr != "COMP" && tipoExpr != "DESC")
+                {
+                    throw new ExcepcionSintactica($"Error Semántico: No se puede asignar '{tipoExpr}' a la variable entera '{sim?.Nombre}'.");
+                }
+                
+                if (sim != null) 
+                {
+                    if (expr is NodoValor nv) sim.Valor = ExtraerValorDirecto(nv);
+                    else sim.Valor = "Expresión";
+                }
+                msg += " [OPA OPAR] FDL"; 
+                RegistrarTraduccion(msg);
+                traduccionSintactica.AppendLine("Árbol de Expresión:\r\n" + GenerarArbolTexto(expr));
+            }
+            else
+            {
+                msg += " FDL";
+                RegistrarTraduccion(msg);
+            }
             Match("FDL");
+            ActualizarSimbolos();
         }
 
         private void ParseIN03()
         {
             string msg = "IN03 -> PR05 ID";
-            Match(TokenActual()); Match("ID");
-            if (TokenActual().StartsWith("OPA") || TokenActual() == "opa") { Match("opa"); ParseOPAR(); msg += " [OPA OPAR]"; }
-            msg += " FDL";
-            RegistrarTraduccion(msg);
+            Match(TokenActual()); 
+            string tokenVar = TokenActual();
+            Match("ID");
+
+            Simbolo sim = ObtenerSimboloPorToken(tokenVar);
+            if (sim != null) sim.Tipo = "FLOT";
+
+            if (TokenActual().StartsWith("OPA") || TokenActual() == "opa") 
+            { 
+                Match(TokenActual()); 
+                NodoExpresion expr = ParseOPAR(); 
+                
+                string tipoExpr = InferirTipo(expr);
+                if (tipoExpr == "CAD" || tipoExpr == "BOOL")
+                {
+                    throw new ExcepcionSintactica($"Error Semántico: No se puede asignar '{tipoExpr}' a la variable flotante '{sim?.Nombre}'.");
+                }
+
+                if (sim != null) 
+                {
+                    if (expr is NodoValor nv) sim.Valor = ExtraerValorDirecto(nv);
+                    else sim.Valor = "Expresión";
+                }
+                msg += " [OPA OPAR] FDL"; 
+                RegistrarTraduccion(msg);
+                traduccionSintactica.AppendLine("Árbol de Expresión:\r\n" + GenerarArbolTexto(expr));
+            }
+            else
+            {
+                msg += " FDL";
+                RegistrarTraduccion(msg);
+            }
             Match("FDL");
+            ActualizarSimbolos();
         }
 
         private void ParseIN04()
@@ -385,31 +443,102 @@ namespace ArchivoDeTokens
         private void ParseIN10()
         {
             string msg = "IN10 (CADENA) -> PR18 ID";
-            Match(TokenActual()); Match("ID");
-            if (TokenActual().StartsWith("OPA") || TokenActual() == "opa") { Match("opa"); Match("CAD"); msg += " [opa CAD]"; }
-            msg += " FDL";
-            RegistrarTraduccion(msg);
+            Match(TokenActual()); 
+            string tokenVar = TokenActual(); // Capturar variable
+            Match("ID");
+
+            Simbolo sim = ObtenerSimboloPorToken(tokenVar);
+            if (sim != null) sim.Tipo = "CAD";
+
+            if (TokenActual().StartsWith("OPA") || TokenActual() == "opa") 
+            { 
+                Match(TokenActual()); 
+                NodoExpresion expr = ParseOPAR();
+                string tipoExpr = InferirTipo(expr);
+                
+                if (tipoExpr != "CAD")
+                    throw new ExcepcionSintactica($"Error Semántico: No se puede asignar '{tipoExpr}' a la variable de texto '{sim?.Nombre}'.");
+                
+                if (sim != null) 
+                {
+                    if (expr is NodoValor nv) sim.Valor = ExtraerValorDirecto(nv);
+                    else sim.Valor = "Expresión";
+                }
+                msg += " [opa CAD] FDL"; 
+                RegistrarTraduccion(msg);
+                traduccionSintactica.AppendLine("Árbol de Expresión:\r\n" + GenerarArbolTexto(expr));
+            }
+            else
+            {
+                msg += " FDL";
+                RegistrarTraduccion(msg);
+            }
             Match("FDL");
+            ActualizarSimbolos();
         }
 
         private void ParseIN11()
         {
             string msg = "IN11 (CARACTER) -> PR19 ID";
-            Match(TokenActual()); Match("ID");
+            Match(TokenActual()); 
+            string tokenVar = TokenActual();
+            Match("ID");
+
+            Simbolo sim = ObtenerSimboloPorToken(tokenVar);
+            if (sim != null) sim.Tipo = "CAR";
+
             if (TokenActual().StartsWith("OPA") || TokenActual() == "opa")
             {
                 Match("opa");
-                if (TokenActual() == "CAR" || TokenActual() == "CAD") Match(TokenActual());
-                msg += " [opa CAR|CAD]";
+                NodoExpresion expr = ParseOPAR();
+                string tipoExpr = InferirTipo(expr);
+                
+                if (tipoExpr != "CAR" && tipoExpr != "CAD")
+                    throw new ExcepcionSintactica($"Error Semántico: No se puede asignar '{tipoExpr}' a la variable de caracter '{sim?.Nombre}'.");
+
+                if (sim != null) 
+                {
+                    if (expr is NodoValor nv) sim.Valor = ExtraerValorDirecto(nv);
+                    else sim.Valor = "Expresión";
+                }
+                msg += " [opa CAR|CAD] FDL";
+                RegistrarTraduccion(msg);
+                traduccionSintactica.AppendLine("Árbol de Expresión:\r\n" + GenerarArbolTexto(expr));
             }
-            msg += " FDL";
-            RegistrarTraduccion(msg);
+            else
+            {
+                msg += " FDL";
+                RegistrarTraduccion(msg);
+            }
             Match("FDL");
+            ActualizarSimbolos();
         }
 
         private void ParseIN12() { RegistrarTraduccion("IN12 -> CONDIC PR20 CONDIC"); ParseCONDIC(); Match("PR20"); ParseCONDIC(); }
         private void ParseIN13() { RegistrarTraduccion("IN13 -> CONDIC PR21 CONDIC"); ParseCONDIC(); Match("PR21"); ParseCONDIC(); }
-        private void ParseIN14() { RegistrarTraduccion("IN14 -> OL2 ce07 CONDIC ce08"); Match(TokenActual()); Match("ce07"); ParseCONDIC(); Match("ce08"); }
+
+        // ParseIN14 Sin implementación de arbol de expresiones
+        //private void ParseIN14() { RegistrarTraduccion("IN14 -> OL2 ce07 CONDIC ce08"); Match(TokenActual()); Match("ce07"); ParseCONDIC(); Match("ce08"); }
+
+        private NodoExpresion ParseIN14()
+        {
+            RegistrarTraduccion("IN14 -> OL2 ce07 CONDIC ce08");
+
+            string operador = TokenActual();
+            Match(operador);
+            Match("ce07");
+
+            
+            NodoExpresion arbolInterno = ParseCONDIC();
+
+            Match("ce08");
+
+            return new NodoUnario
+            {
+                Operador = operador,
+                Operando = arbolInterno
+            };
+        }
 
         private void ParseIN15()
         {
@@ -519,6 +648,8 @@ namespace ArchivoDeTokens
             Match("ce10");
         }
 
+        // ParseAsignación Sin arbol de expresiones
+        /*
         private void ParseAsignacion()
         {
             RegistrarTraduccion("ASIGNACION -> ID opa EXPRESION FDL");
@@ -542,6 +673,185 @@ namespace ArchivoDeTokens
 
             ParseExpresion();
             Match("FDL");
+        }
+        */
+
+        private Simbolo ObtenerSimboloPorToken(string token)
+        {
+            if (token != null && token.StartsWith("IDENT"))
+            {
+                if (int.TryParse(token.Substring(5), out int num))
+                {
+                    return listaSimbolos.FirstOrDefault(s => s.Num == num);
+                }
+            }
+            return null;
+        }
+
+        private string ExtraerValorDirecto(NodoValor nodo)
+        {
+            try
+            {
+                if (nodo.Linea > 0 && nodo.Linea <= rtxtCodigo.Lines.Length)
+                {
+                    string linea = rtxtCodigo.Lines[nodo.Linea - 1];
+                    int idxIgual = linea.IndexOf('=');
+                    if (idxIgual != -1)
+                    {
+                        string valor = linea.Substring(idxIgual + 1).Trim();
+                        if (valor.EndsWith("~"))
+                        {
+                            valor = valor.Substring(0, valor.Length - 1).Trim();
+                        }
+                        return valor;
+                    }
+                }
+            }
+            catch { }
+            return "Valor Directo";
+        }
+
+        private string GenerarArbolTexto(NodoExpresion nodo, string prefijo = "", bool esUltimo = true)
+        {
+            if (nodo == null) return "";
+
+            string resultado = "";
+            string marcador = esUltimo ? "└── " : "├── ";
+
+            if (nodo is NodoValor valor)
+            {
+                string texto = valor.TipoToken;
+                if (texto.StartsWith("IDENT"))
+                {
+                    var sim = ObtenerSimboloPorToken(texto);
+                    texto = sim != null ? sim.Nombre : texto;
+                }
+                resultado += prefijo + marcador + texto + "\r\n";
+            }
+            else if (nodo is NodoOperacion op)
+            {
+                string txtOp = op.Operador;
+                if (txtOp == "OA1") txtOp = "+";
+                else if (txtOp == "OA2") txtOp = "-";
+                else if (txtOp == "OA3") txtOp = "*";
+                else if (txtOp == "OA4") txtOp = "/";
+                else if (txtOp == "OA5") txtOp = "^";
+                else if (txtOp == "OR1") txtOp = "==";
+                else if (txtOp == "OR2") txtOp = "<";
+                else if (txtOp == "OR3") txtOp = ">";
+                else if (txtOp == "OR4") txtOp = "<=";
+                else if (txtOp == "OR5") txtOp = ">=";
+                else if (txtOp == "OR6") txtOp = "!=";
+
+                resultado += prefijo + marcador + txtOp + "\r\n";
+                string nuevoPrefijo = prefijo + (esUltimo ? "    " : "│   ");
+                resultado += GenerarArbolTexto(op.Izquierdo, nuevoPrefijo, false);
+                resultado += GenerarArbolTexto(op.Derecho, nuevoPrefijo, true);
+            }
+            else if (nodo is NodoUnario un)
+            {
+                resultado += prefijo + marcador + un.Operador + "\r\n";
+                string nuevoPrefijo = prefijo + (esUltimo ? "    " : "│   ");
+                resultado += GenerarArbolTexto(un.Operando, nuevoPrefijo, true);
+            }
+
+            return resultado;
+        }
+
+        private string InferirTipo(NodoExpresion nodo)
+        {
+            if (nodo is NodoValor valor)
+            {
+                if (valor.TipoToken == "CNU" || valor.TipoToken == "CN") return "COMP";
+                if (valor.TipoToken == "CAD" || valor.TipoToken.StartsWith("cad")) return "CAD";
+                if (valor.TipoToken == "CAR" || valor.TipoToken.StartsWith("car")) return "CAR";
+                if (valor.TipoToken == "PR16" || valor.TipoToken == "PR17") return "BOOL";
+                
+                if (valor.TipoToken.StartsWith("IDENT") || valor.TipoToken == "ID")
+                {
+                    Simbolo sim = ObtenerSimboloPorToken(valor.TipoToken);
+                    if (sim != null && !string.IsNullOrEmpty(sim.Tipo))
+                        return sim.Tipo;
+                    return "DESC"; // Desconocido o sin inicializar
+                }
+            }
+            else if (nodo is NodoOperacion op)
+            {
+                string tipoIzq = InferirTipo(op.Izquierdo);
+                string tipoDer = InferirTipo(op.Derecho);
+
+                if (op.Operador == "OPR" || op.Operador.StartsWith("OR") || op.Operador.StartsWith("OL"))
+                    return "BOOL";
+
+                // Concatenación de cadenas y caracteres
+                if (tipoIzq == "CAD" || tipoDer == "CAD" || tipoIzq == "CAR" || tipoDer == "CAR")
+                {
+                    
+                    if (op.Operador != "OA1")
+                    {
+                        throw new ExcepcionSintactica($"Error Semántico: No se puede aplicar el operador '{op.Operador}' a los tipos '{tipoIzq}' y '{tipoDer}'. Solo se permite suma (+) para cadenas/caracteres.");
+                    }
+                    return "CAD";
+                }
+
+                if (tipoIzq == "FLOT" || tipoDer == "FLOT") return "FLOT";
+                if (tipoIzq == "COMP" && tipoDer == "COMP") return "COMP";
+                
+                return "COMP";
+            }
+            else if (nodo is NodoUnario un)
+            {
+                return InferirTipo(un.Operando);
+            }
+            return "DESC";
+        }
+
+        // ParseAsignación con Arbol de expresiones y Semántica
+        private void ParseAsignacion()
+        {
+            RegistrarTraduccion("ASIGNACION -> ID OPA EXPRESION FDL");
+            string tokenVar = TokenActual();
+            Match("ID");
+            
+            if (TokenActual() == "OPA" || TokenActual() == "opa")
+            {
+                Match(TokenActual());
+            }
+            else
+            {
+                throw new ExcepcionSintactica("Se esperaba el operador de asignación '='.");
+            }
+
+            NodoExpresion expr = ParseExpresion();
+
+            Simbolo sim = ObtenerSimboloPorToken(tokenVar);
+            if (sim != null)
+            {
+                if (string.IsNullOrEmpty(sim.Tipo))
+                {
+                    throw new ExcepcionSintactica($"Error Semántico: La variable '{sim.Nombre}' no ha sido declarada.");
+                }
+
+                string tipoExpr = InferirTipo(expr);
+                
+                if (sim.Tipo == "COMP" && tipoExpr != "COMP" && tipoExpr != "DESC")
+                    throw new ExcepcionSintactica($"Error Semántico: No se puede asignar '{tipoExpr}' a la variable entera '{sim.Nombre}'.");
+                else if (sim.Tipo == "FLOT" && (tipoExpr == "CAD" || tipoExpr == "BOOL"))
+                    throw new ExcepcionSintactica($"Error Semántico: No se puede asignar '{tipoExpr}' a la variable flotante '{sim.Nombre}'.");
+                else if (sim.Tipo == "CAR" && tipoExpr != "CAR")
+                    throw new ExcepcionSintactica($"Error Semántico: No se puede asignar '{tipoExpr}' a la variable de caracter '{sim.Nombre}'.");
+                else if (sim.Tipo == "CAD" && tipoExpr != "CAD")
+                    throw new ExcepcionSintactica($"Error Semántico: No se puede asignar '{tipoExpr}' a la variable de texto '{sim.Nombre}'.");
+                
+                if (expr is NodoValor nv) sim.Valor = ExtraerValorDirecto(nv);
+                else sim.Valor = "Expresión";
+                
+                RegistrarTraduccion("ASIGNACION -> ID OPA EXPRESION");
+                traduccionSintactica.AppendLine("Árbol de Expresión:\r\n" + GenerarArbolTexto(expr));
+            }
+
+            Match("FDL");
+            ActualizarSimbolos();
         }
 
         // --- EVALUADORES DE EXPRESIONES (OPAR y CONDIC) ---
@@ -631,6 +941,8 @@ namespace ArchivoDeTokens
             }
         }
 
+        // ParseExpresion sin arbol de expresiones
+        /*
         private void ParseExpresion()
         {
             string t = TokenActual();
@@ -644,7 +956,7 @@ namespace ArchivoDeTokens
             else if (t == "CNU" || t == "CN" || t == "ce07" || t.StartsWith("IDENT"))
             {
                 // Evaluamos si es una expresión aritmética o un ID solo.
-                ParseExpresionAritmetica();
+                //ParseExpresionAritmetica();
             }
             else if (t == "PR16" || t == "PR17")
             {
@@ -658,7 +970,47 @@ namespace ArchivoDeTokens
                 throw new Exception($"Valor o expresión inválida en la asignación. No se reconoce: '{t}'");
             }
         }
+        */
 
+
+        // ParseExpresion con Arbol de Expresiones
+        private NodoExpresion ParseExpresion()
+        {
+            string t = TokenActual();
+
+            // Cadenas de texto
+            if (t == "CAD" || t.StartsWith("cad"))
+            {
+                
+                Match(t);
+                return new NodoValor { TipoToken = t };
+            }
+            // Booleanos (PR16, PR17)
+            else if (t == "PR16" || t == "PR17")
+            {
+                Match(t);
+                return new NodoValor { TipoToken = t }; 
+            }
+            // Negaciones u operaciones lógicas
+            else if (t == "OL2")
+            {
+                // ParseIN14() ahora también tendría que retornar un NodoExpresion
+                return ParseIN14();
+            }
+            // Operaciones
+            else if (t == "CNU" || t == "CN" || t == "ce07" || t.StartsWith("IDENT") || t == "ID")
+            {
+                
+                return ParseCONDIC(); 
+            }
+            else
+            {
+                throw new ExcepcionSintactica($"Valor o expresión inválida en la asignación. No se reconoce: '{t}'");
+            }
+        }
+
+        // Operaciones sin arbol de expresiones
+        /*
         private void ParseExpresionAritmetica()
         {
             ParseTerminoAritmetico();
@@ -689,6 +1041,84 @@ namespace ArchivoDeTokens
                 throw new Exception("Se esperaba un número, variable o '('");
             }
         }
+        */
+
+        // Operaciones con Arbol de Expresiones
+        private NodoExpresion ParseSumaResta()
+        {
+            // Mayor prioridad
+            NodoExpresion nodoIzquierdo = ParseMultiplicacionDivision();
+            // Le sigue una suma o resta
+            while (TokenActual() == "OA1" || TokenActual() == "OA2") 
+            {
+                string operador = TokenActual();
+                Match(operador);
+
+                NodoExpresion nodoDerecho = ParseMultiplicacionDivision(); //  lado derecho
+                                                                          
+                nodoIzquierdo = new NodoOperacion
+                {
+                    Izquierdo = nodoIzquierdo,
+                    Operador = operador,
+                    Derecho = nodoDerecho
+                };
+            }
+
+            return nodoIzquierdo;
+        }
+
+        private NodoExpresion ParseMultiplicacionDivision()
+        {
+            // Máxima prioridad
+            NodoExpresion nodoIzquierdo = ParseFactor();
+
+            // perador de multiplicación, división o potencia
+            while (TokenActual() == "OA3" || TokenActual() == "OA4" || TokenActual() == "OA5")
+            {
+                string operador = TokenActual();
+                Match(operador);
+
+                NodoExpresion nodoDerecho = ParseFactor();
+
+                nodoIzquierdo = new NodoOperacion
+                {
+                    Izquierdo = nodoIzquierdo,
+                    Operador = operador,
+                    Derecho = nodoDerecho
+                };
+            }
+
+            return nodoIzquierdo;
+        }
+        private NodoExpresion ParseFactor()
+        {
+            string t = TokenActual();
+
+            // Si es un número, variable, cadena, caracter o booleano, es una Hoja del árbol
+            if (t == "CNU" || t == "CN" || t.StartsWith("IDENT") || t == "ID" || t == "CAD" || t == "CAR" || t == "PR16" || t == "PR17")
+            {
+                string tokenEsperado = t.StartsWith("IDENT") ? "ID" : t;
+
+                int numLinea = punteroSintactico < tokensSintacticosObj.Count ? tokensSintacticosObj[punteroSintactico].Linea : 1;
+                NodoValor hoja = new NodoValor { TipoToken = t, Linea = numLinea }; // Guardamos el token exacto y su línea
+
+                Match(tokenEsperado);
+                return hoja;
+            }
+            // ce07 es '(', ce08 es ')'
+            else if (t == "ce07")
+            {
+                Match("ce07");
+                NodoExpresion nodoInterior = ParseSumaResta(); // Se regresa al inicio de la jerarquía
+                Match("ce08");
+
+                return nodoInterior; // Se retorna el árbol que se formó dentro de los paréntesis
+            }
+            else
+            {
+                throw new ExcepcionSintactica($"Se esperaba un número, variable o '(', pero se encontró '{t}'");
+            }
+        }
 
         private void ParseValorCadena()
         {
@@ -706,15 +1136,10 @@ namespace ArchivoDeTokens
             Match("ID"); Match("opa"); ParseOPAR();
         }
 
-        private void ParseOPAR()
+        // PUENTE DE COMPATIBILIDAD
+        private NodoExpresion ParseOPAR()
         {
-            ParseValorAritmetico();
-            //while (TokenActual() == "OAR" || TokenActual() == "OPA+" || TokenActual() == "OPA-" || TokenActual() == "OPA*" || TokenActual() == "OPA/")
-            while (TokenActual() == "OA5" || TokenActual() == "OA1" || TokenActual() == "OA2" || TokenActual() == "OA3" || TokenActual() == "OA4")
-            {
-                Match(TokenActual());
-                ParseValorAritmetico();
-            }
+            return ParseSumaResta();
         }
 
         private void ParseValorAritmetico()
@@ -724,6 +1149,8 @@ namespace ArchivoDeTokens
             else throw new Exception($"Se esperaba ID o Número, se encontró '{TokenActual()}'");
         }
 
+        // PARSECONDIC ANTES DE ARBOL DE EXPRESION
+        /*
         private void ParseCONDIC()
         {
             ParseValorCondicion();
@@ -732,8 +1159,47 @@ namespace ArchivoDeTokens
                 Match(TokenActual());
                 ParseValorCondicion();
             }
-        }
+        }*/
+        // Nivel 0 (La base de la pirámide): Condiciones Relacionales (>, <, ==, !=)
+        private NodoExpresion ParseCondicion()
+        {
+            
+            NodoExpresion nodoIzquierdo = ParseSumaResta();
 
+            while (TokenActual() == "OPR" || TokenActual().StartsWith("OR") || TokenActual() == "OL1")
+            {
+                string operador = TokenActual();
+                Match(operador); // símbolo '>'
+
+                NodoExpresion nodoDerecho = ParseSumaResta();
+
+                // Juntamos todo en el árbol
+                nodoIzquierdo = new NodoOperacion
+                {
+                    Izquierdo = nodoIzquierdo,
+                    Operador = operador,
+                    Derecho = nodoDerecho
+                };
+            }
+
+            return nodoIzquierdo;
+        }
+        private NodoExpresion ParseCONDIC()
+                {
+                    NodoExpresion nodoIzquierdo = ParseSumaResta();
+                    // Incluye tus tokens de OPR, OPL, OR, OL
+                    while (TokenActual() == "OPR" || TokenActual() == "OPL" || TokenActual().StartsWith("OR") || TokenActual().StartsWith("OL"))
+                    {
+                        string operador = TokenActual();
+                        Match(operador);
+                        NodoExpresion nodoDerecho = ParseSumaResta();
+                        nodoIzquierdo = new NodoOperacion
+                        {
+                            Izquierdo = nodoIzquierdo, Operador = operador, Derecho = nodoDerecho
+                        };
+                    }
+                    return nodoIzquierdo;
+                }
         private void ParseValorCondicion()
         {
             string t = TokenActual();
@@ -1092,7 +1558,7 @@ namespace ArchivoDeTokens
             DgvSimbolos.Rows.Clear();
             foreach (Simbolo simbolo in listaSimbolos)
             {
-                DgvSimbolos.Rows.Add(simbolo.Num, simbolo.Nombre);
+                DgvSimbolos.Rows.Add(simbolo.Num, simbolo.Nombre, simbolo.Tipo, simbolo.Valor);
             }
 
         }

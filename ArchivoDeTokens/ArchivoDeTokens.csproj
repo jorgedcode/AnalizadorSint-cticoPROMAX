@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ArbolExp.cs" />
     <Compile Include="ConexionBD.cs" />
     <Compile Include="ErrorLexico.cs" />
     <Compile Include="Form1.cs">
