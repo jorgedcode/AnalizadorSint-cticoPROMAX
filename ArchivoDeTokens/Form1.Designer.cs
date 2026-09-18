@@ -72,10 +72,10 @@
             // 
             // btnLexico
             // 
-            this.btnLexico.Location = new System.Drawing.Point(1339, 35);
+            this.btnLexico.Location = new System.Drawing.Point(1506, 44);
             this.btnLexico.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnLexico.Name = "btnLexico";
-            this.btnLexico.Size = new System.Drawing.Size(104, 57);
+            this.btnLexico.Size = new System.Drawing.Size(117, 71);
             this.btnLexico.TabIndex = 1;
             this.btnLexico.TabStop = false;
             this.btnLexico.Text = "Analizador Léxico";
@@ -85,10 +85,10 @@
             // rtxtCodigo
             // 
             this.rtxtCodigo.AcceptsTab = true;
-            this.rtxtCodigo.Location = new System.Drawing.Point(65, 27);
+            this.rtxtCodigo.Location = new System.Drawing.Point(73, 34);
             this.rtxtCodigo.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.rtxtCodigo.Name = "rtxtCodigo";
-            this.rtxtCodigo.Size = new System.Drawing.Size(433, 498);
+            this.rtxtCodigo.Size = new System.Drawing.Size(487, 622);
             this.rtxtCodigo.TabIndex = 3;
             this.rtxtCodigo.TabStop = false;
             this.rtxtCodigo.Text = "";
@@ -99,10 +99,10 @@
             // 
             // btnCargarProg
             // 
-            this.btnCargarProg.Location = new System.Drawing.Point(1340, 97);
+            this.btnCargarProg.Location = new System.Drawing.Point(1508, 121);
             this.btnCargarProg.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnCargarProg.Name = "btnCargarProg";
-            this.btnCargarProg.Size = new System.Drawing.Size(104, 64);
+            this.btnCargarProg.Size = new System.Drawing.Size(117, 80);
             this.btnCargarProg.TabIndex = 8;
             this.btnCargarProg.TabStop = false;
             this.btnCargarProg.Text = "Cargar Programa";
@@ -111,10 +111,10 @@
             // 
             // btnEditarProg
             // 
-            this.btnEditarProg.Location = new System.Drawing.Point(1340, 166);
+            this.btnEditarProg.Location = new System.Drawing.Point(1508, 208);
             this.btnEditarProg.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnEditarProg.Name = "btnEditarProg";
-            this.btnEditarProg.Size = new System.Drawing.Size(104, 50);
+            this.btnEditarProg.Size = new System.Drawing.Size(117, 62);
             this.btnEditarProg.TabIndex = 9;
             this.btnEditarProg.TabStop = false;
             this.btnEditarProg.Text = "Editar Programa";
@@ -123,10 +123,10 @@
             // 
             // btnGuardarProg
             // 
-            this.btnGuardarProg.Location = new System.Drawing.Point(1340, 221);
+            this.btnGuardarProg.Location = new System.Drawing.Point(1508, 276);
             this.btnGuardarProg.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnGuardarProg.Name = "btnGuardarProg";
-            this.btnGuardarProg.Size = new System.Drawing.Size(104, 53);
+            this.btnGuardarProg.Size = new System.Drawing.Size(117, 66);
             this.btnGuardarProg.TabIndex = 10;
             this.btnGuardarProg.TabStop = false;
             this.btnGuardarProg.Text = "Guardar Programa";
@@ -135,10 +135,10 @@
             // 
             // btnGuardarArchTokens
             // 
-            this.btnGuardarArchTokens.Location = new System.Drawing.Point(1339, 279);
+            this.btnGuardarArchTokens.Location = new System.Drawing.Point(1506, 349);
             this.btnGuardarArchTokens.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnGuardarArchTokens.Name = "btnGuardarArchTokens";
-            this.btnGuardarArchTokens.Size = new System.Drawing.Size(104, 68);
+            this.btnGuardarArchTokens.Size = new System.Drawing.Size(117, 85);
             this.btnGuardarArchTokens.TabIndex = 11;
             this.btnGuardarArchTokens.TabStop = false;
             this.btnGuardarArchTokens.Text = "Guardar Archivo de Tokens";
@@ -148,9 +148,9 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(31, 9);
+            this.label1.Location = new System.Drawing.Point(35, 11);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(25, 16);
+            this.label1.Size = new System.Drawing.Size(29, 20);
             this.label1.TabIndex = 12;
             this.label1.Text = "No";
             // 
@@ -159,10 +159,10 @@
             this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
             this.pictureBox1.InitialImage = ((System.Drawing.Image)(resources.GetObject("pictureBox1.InitialImage")));
-            this.pictureBox1.Location = new System.Drawing.Point(1510, 34);
+            this.pictureBox1.Location = new System.Drawing.Point(1699, 42);
             this.pictureBox1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(219, 190);
+            this.pictureBox1.Size = new System.Drawing.Size(246, 238);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBox1.TabIndex = 16;
             this.pictureBox1.TabStop = false;
@@ -170,10 +170,10 @@
             // lblEquipo
             // 
             this.lblEquipo.AutoSize = true;
-            this.lblEquipo.Location = new System.Drawing.Point(1519, 247);
+            this.lblEquipo.Location = new System.Drawing.Point(1709, 309);
             this.lblEquipo.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblEquipo.Name = "lblEquipo";
-            this.lblEquipo.Size = new System.Drawing.Size(37, 16);
+            this.lblEquipo.Size = new System.Drawing.Size(42, 20);
             this.lblEquipo.TabIndex = 17;
             this.lblEquipo.Text = "label";
             this.lblEquipo.Click += new System.EventHandler(this.lblEquipo_Click);
@@ -181,19 +181,20 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(78, 9);
+            this.label5.Location = new System.Drawing.Point(88, 11);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(51, 16);
+            this.label5.Size = new System.Drawing.Size(59, 20);
             this.label5.TabIndex = 14;
             this.label5.Text = "Código";
             // 
             // rtxLineasCodigo
             // 
             this.rtxLineasCodigo.BackColor = System.Drawing.SystemColors.InactiveCaption;
-            this.rtxLineasCodigo.Location = new System.Drawing.Point(24, 27);
+            this.rtxLineasCodigo.Location = new System.Drawing.Point(27, 34);
             this.rtxLineasCodigo.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.rtxLineasCodigo.Name = "rtxLineasCodigo";
-            this.rtxLineasCodigo.Size = new System.Drawing.Size(32, 498);
+            this.rtxLineasCodigo.ReadOnly = true;
+            this.rtxLineasCodigo.Size = new System.Drawing.Size(36, 622);
             this.rtxLineasCodigo.TabIndex = 13;
             this.rtxLineasCodigo.TabStop = false;
             this.rtxLineasCodigo.Text = "";
@@ -202,28 +203,29 @@
             // lblCE
             // 
             this.lblCE.AutoSize = true;
-            this.lblCE.Location = new System.Drawing.Point(1337, 468);
+            this.lblCE.Location = new System.Drawing.Point(1504, 585);
             this.lblCE.Name = "lblCE";
-            this.lblCE.Size = new System.Drawing.Size(0, 16);
+            this.lblCE.Size = new System.Drawing.Size(0, 20);
             this.lblCE.TabIndex = 20;
+            this.lblCE.Visible = false;
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(600, 3);
+            this.label2.Location = new System.Drawing.Point(675, 4);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(120, 16);
+            this.label2.Size = new System.Drawing.Size(139, 20);
             this.label2.TabIndex = 13;
             this.label2.Text = "Archivo de Tokens";
             // 
             // rtxtTokens
             // 
             this.rtxtTokens.AcceptsTab = true;
-            this.rtxtTokens.Location = new System.Drawing.Point(592, 27);
+            this.rtxtTokens.Location = new System.Drawing.Point(666, 34);
             this.rtxtTokens.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.rtxtTokens.Name = "rtxtTokens";
             this.rtxtTokens.ReadOnly = true;
-            this.rtxtTokens.Size = new System.Drawing.Size(722, 498);
+            this.rtxtTokens.Size = new System.Drawing.Size(812, 622);
             this.rtxtTokens.TabIndex = 4;
             this.rtxtTokens.TabStop = false;
             this.rtxtTokens.Text = "";
@@ -232,19 +234,20 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(557, 3);
+            this.label6.Location = new System.Drawing.Point(627, 4);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(25, 16);
+            this.label6.Size = new System.Drawing.Size(29, 20);
             this.label6.TabIndex = 15;
             this.label6.Text = "No";
             // 
             // rtxTokens
             // 
             this.rtxTokens.BackColor = System.Drawing.SystemColors.InactiveCaption;
-            this.rtxTokens.Location = new System.Drawing.Point(550, 27);
+            this.rtxTokens.Location = new System.Drawing.Point(619, 34);
             this.rtxTokens.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.rtxTokens.Name = "rtxTokens";
-            this.rtxTokens.Size = new System.Drawing.Size(32, 498);
+            this.rtxTokens.ReadOnly = true;
+            this.rtxTokens.Size = new System.Drawing.Size(36, 622);
             this.rtxTokens.TabIndex = 16;
             this.rtxTokens.TabStop = false;
             this.rtxTokens.Text = "";
@@ -253,11 +256,11 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(28, 533);
+            this.label3.Location = new System.Drawing.Point(32, 666);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(109, 16);
+            this.label3.Size = new System.Drawing.Size(183, 20);
             this.label3.TabIndex = 14;
-            this.label3.Text = "Tabla de Errores";
+            this.label3.Text = "Tabla de Errores Léxicos";
             // 
             // DgvErrores
             // 
@@ -266,11 +269,11 @@
             this.linea,
             this.error});
             this.DgvErrores.Enabled = false;
-            this.DgvErrores.Location = new System.Drawing.Point(24, 553);
-            this.DgvErrores.Margin = new System.Windows.Forms.Padding(4);
+            this.DgvErrores.Location = new System.Drawing.Point(27, 691);
+            this.DgvErrores.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.DgvErrores.Name = "DgvErrores";
             this.DgvErrores.RowHeadersWidth = 51;
-            this.DgvErrores.Size = new System.Drawing.Size(627, 193);
+            this.DgvErrores.Size = new System.Drawing.Size(705, 241);
             this.DgvErrores.TabIndex = 5;
             this.DgvErrores.TabStop = false;
             // 
@@ -281,7 +284,7 @@
             this.linea.MinimumWidth = 6;
             this.linea.Name = "linea";
             this.linea.ReadOnly = true;
-            this.linea.Width = 69;
+            this.linea.Width = 84;
             // 
             // error
             // 
@@ -294,9 +297,9 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(663, 531);
+            this.label4.Location = new System.Drawing.Point(746, 664);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(122, 16);
+            this.label4.Size = new System.Drawing.Size(139, 20);
             this.label4.TabIndex = 15;
             this.label4.Text = "Tabla de Símbolos";
             // 
@@ -309,11 +312,11 @@
             this.tipodedato,
             this.valor});
             this.DgvSimbolos.Enabled = false;
-            this.DgvSimbolos.Location = new System.Drawing.Point(666, 553);
-            this.DgvSimbolos.Margin = new System.Windows.Forms.Padding(4);
+            this.DgvSimbolos.Location = new System.Drawing.Point(749, 691);
+            this.DgvSimbolos.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.DgvSimbolos.Name = "DgvSimbolos";
             this.DgvSimbolos.RowHeadersWidth = 51;
-            this.DgvSimbolos.Size = new System.Drawing.Size(870, 193);
+            this.DgvSimbolos.Size = new System.Drawing.Size(979, 241);
             this.DgvSimbolos.TabIndex = 6;
             this.DgvSimbolos.TabStop = false;
             // 
@@ -351,10 +354,10 @@
             // 
             // btnAnalizadorSintactico
             // 
-            this.btnAnalizadorSintactico.Location = new System.Drawing.Point(1339, 368);
+            this.btnAnalizadorSintactico.Location = new System.Drawing.Point(1506, 460);
             this.btnAnalizadorSintactico.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnAnalizadorSintactico.Name = "btnAnalizadorSintactico";
-            this.btnAnalizadorSintactico.Size = new System.Drawing.Size(104, 68);
+            this.btnAnalizadorSintactico.Size = new System.Drawing.Size(117, 85);
             this.btnAnalizadorSintactico.TabIndex = 21;
             this.btnAnalizadorSintactico.TabStop = false;
             this.btnAnalizadorSintactico.Text = "Analizador Sintáctico";
@@ -369,12 +372,13 @@
             this.dtgErrsSint.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.LineaSintáctico,
             this.ErrorSintáctico});
-            this.dtgErrsSint.Location = new System.Drawing.Point(24, 781);
+            this.dtgErrsSint.Location = new System.Drawing.Point(27, 976);
+            this.dtgErrsSint.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.dtgErrsSint.Name = "dtgErrsSint";
             this.dtgErrsSint.ReadOnly = true;
             this.dtgErrsSint.RowHeadersWidth = 51;
             this.dtgErrsSint.RowTemplate.Height = 24;
-            this.dtgErrsSint.Size = new System.Drawing.Size(732, 191);
+            this.dtgErrsSint.Size = new System.Drawing.Size(824, 239);
             this.dtgErrsSint.TabIndex = 22;
             // 
             // LineaSintáctico
@@ -396,53 +400,57 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(28, 762);
+            this.label7.Location = new System.Drawing.Point(32, 952);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(177, 16);
+            this.label7.Size = new System.Drawing.Size(208, 20);
             this.label7.TabIndex = 23;
             this.label7.Text = "Tabla de Errores Sintácticos";
             // 
             // lblAnSint
             // 
             this.lblAnSint.AutoSize = true;
-            this.lblAnSint.Location = new System.Drawing.Point(759, 762);
+            this.lblAnSint.Location = new System.Drawing.Point(854, 952);
             this.lblAnSint.Name = "lblAnSint";
-            this.lblAnSint.Size = new System.Drawing.Size(115, 16);
+            this.lblAnSint.Size = new System.Drawing.Size(137, 20);
             this.lblAnSint.TabIndex = 24;
             this.lblAnSint.Text = "Análisis Sintáctico";
             // 
             // rtxtAnSint
             // 
-            this.rtxtAnSint.Location = new System.Drawing.Point(762, 781);
+            this.rtxtAnSint.Location = new System.Drawing.Point(857, 976);
+            this.rtxtAnSint.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.rtxtAnSint.Name = "rtxtAnSint";
-            this.rtxtAnSint.Size = new System.Drawing.Size(513, 199);
+            this.rtxtAnSint.ReadOnly = true;
+            this.rtxtAnSint.Size = new System.Drawing.Size(577, 248);
             this.rtxtAnSint.TabIndex = 25;
             this.rtxtAnSint.Text = "";
             // 
             // rtxtAnSintSINO
             // 
-            this.rtxtAnSintSINO.Location = new System.Drawing.Point(1291, 781);
+            this.rtxtAnSintSINO.Location = new System.Drawing.Point(1452, 976);
+            this.rtxtAnSintSINO.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.rtxtAnSintSINO.Name = "rtxtAnSintSINO";
-            this.rtxtAnSintSINO.Size = new System.Drawing.Size(492, 199);
+            this.rtxtAnSintSINO.ReadOnly = true;
+            this.rtxtAnSintSINO.Size = new System.Drawing.Size(553, 248);
             this.rtxtAnSintSINO.TabIndex = 27;
             this.rtxtAnSintSINO.Text = "";
             // 
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(1288, 762);
+            this.label8.Location = new System.Drawing.Point(1449, 952);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(185, 16);
+            this.label8.Size = new System.Drawing.Size(223, 20);
             this.label8.TabIndex = 26;
             this.label8.Text = "Análisis Sintáctico de SI-SINO";
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.ClientSize = new System.Drawing.Size(1795, 992);
+            this.ClientSize = new System.Drawing.Size(2019, 1240);
             this.Controls.Add(this.rtxtAnSintSINO);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.rtxtAnSint);

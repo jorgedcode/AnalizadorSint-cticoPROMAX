@@ -12,6 +12,7 @@ namespace ArchivoDeTokens
     {
         public string TipoToken { get; set; }
         public int Linea { get; set; }
+        public string Lexema { get; set; }
     }
 
     public class NodoOperacion : NodoExpresion

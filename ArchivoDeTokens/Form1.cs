@@ -26,9 +26,13 @@ namespace ArchivoDeTokens
         {
             InitializeComponent();
             CargarMatrizEnMemoria();
-            lblEquipo.Text = "Equipo\nHiram García Guerra. #23100161\nJorge Arturo Mata Camacho. #C21100514\nReynaldo Daniel Reyes Parra. #23100202\n\nVersión: 1.3";
+            lblEquipo.Text = "Equipo\nHiram García Guerra. #23100161\nJorge Arturo Mata Camacho. #C21100514\nReynaldo Daniel Reyes Parra. #23100202\n\nVersión: 2.1.4";
             rtxTokens.Text = "1\n";
             rtxLineasCodigo.Text = "1\n";
+
+            // Validaciones para rtxtCodigo
+            rtxtCodigo.KeyDown += RtxtCodigo_KeyDown;
+            rtxtCodigo.KeyPress += RtxtCodigo_KeyPress;
         }
 
         private void CargarMatrizEnMemoria()
@@ -72,6 +76,7 @@ namespace ArchivoDeTokens
         {
             public string Valor { get; set; }
             public int Linea { get; set; }
+            public string Lexema { get; set; }
         }
 
         public class ErrorSintactico
@@ -493,7 +498,7 @@ namespace ArchivoDeTokens
                 NodoExpresion expr = ParseOPAR();
                 string tipoExpr = InferirTipo(expr);
                 
-                if (tipoExpr != "CAR" && tipoExpr != "CAD")
+                if (tipoExpr != "CAR")
                     throw new ExcepcionSintactica($"Error Semántico: No se puede asignar '{tipoExpr}' a la variable de caracter '{sim?.Nombre}'.");
 
                 if (sim != null) 
@@ -501,7 +506,7 @@ namespace ArchivoDeTokens
                     if (expr is NodoValor nv) sim.Valor = ExtraerValorDirecto(nv);
                     else sim.Valor = "Expresión";
                 }
-                msg += " [opa CAR|CAD] FDL";
+                msg += " [opa CAR] FDL";
                 RegistrarTraduccion(msg);
                 traduccionSintactica.AppendLine("Árbol de Expresión:\r\n" + GenerarArbolTexto(expr));
             }
@@ -762,7 +767,10 @@ namespace ArchivoDeTokens
         {
             if (nodo is NodoValor valor)
             {
-                if (valor.TipoToken == "CNU" || valor.TipoToken == "CN") return "COMP";
+                if (valor.TipoToken == "CNU" || valor.TipoToken == "CN") {
+                    if (!string.IsNullOrEmpty(valor.Lexema) && valor.Lexema.Contains(".")) return "FLOT";
+                    return "COMP";
+                }
                 if (valor.TipoToken == "CAD" || valor.TipoToken.StartsWith("cad")) return "CAD";
                 if (valor.TipoToken == "CAR" || valor.TipoToken.StartsWith("car")) return "CAR";
                 if (valor.TipoToken == "PR16" || valor.TipoToken == "PR17") return "BOOL";
@@ -772,7 +780,7 @@ namespace ArchivoDeTokens
                     Simbolo sim = ObtenerSimboloPorToken(valor.TipoToken);
                     if (sim != null && !string.IsNullOrEmpty(sim.Tipo))
                         return sim.Tipo;
-                    return "DESC"; // Desconocido o sin inicializar
+                    throw new ExcepcionSintactica($"Error Semántico: La variable '{sim?.Nombre ?? valor.TipoToken}' no ha sido declarada o inicializada antes de su uso en una expresión.");
                 }
             }
             else if (nodo is NodoOperacion op)
@@ -859,7 +867,7 @@ namespace ArchivoDeTokens
         { // ID | CNU | CAD | OPAR | PR14 | PR15
             string t = TokenActual();
             if (t == "CAD" || t == "PR14" || t == "PR15") Match(t);
-            else ParseOPAR(); // OPAR internamente resuelve ID o CNU
+            else ParseOPAR(); // OPAR resuelve ID o CNU
         }
 
         private void ParseARG2()
@@ -1054,7 +1062,7 @@ namespace ArchivoDeTokens
                 string operador = TokenActual();
                 Match(operador);
 
-                NodoExpresion nodoDerecho = ParseMultiplicacionDivision(); //  lado derecho
+                NodoExpresion nodoDerecho = ParseMultiplicacionDivision();
                                                                           
                 nodoIzquierdo = new NodoOperacion
                 {
@@ -1099,8 +1107,10 @@ namespace ArchivoDeTokens
             {
                 string tokenEsperado = t.StartsWith("IDENT") ? "ID" : t;
 
-                int numLinea = punteroSintactico < tokensSintacticosObj.Count ? tokensSintacticosObj[punteroSintactico].Linea : 1;
-                NodoValor hoja = new NodoValor { TipoToken = t, Linea = numLinea }; // Guardamos el token exacto y su línea
+                var ts = punteroSintactico < tokensSintacticosObj.Count ? tokensSintacticosObj[punteroSintactico] : null;
+                int numLinea = ts != null ? ts.Linea : 1;
+                string lexema = ts != null ? ts.Lexema : null;
+                NodoValor hoja = new NodoValor { TipoToken = t, Linea = numLinea, Lexema = lexema }; // Guardamos el token exacto y su línea y lexema
 
                 Match(tokenEsperado);
                 return hoja;
@@ -1845,12 +1855,19 @@ namespace ArchivoDeTokens
 
             // 2. Extraemos los tokens línea por línea manteniendo el control de en qué línea estaban
             string[] lineas = rtxtTokens.Lines;
+            string[] lineasCodigo = rtxtCodigo.Lines;
             for (int i = 0; i < lineas.Length; i++)
             {
                 string lineaLimpia = lineas[i].Trim();
                 if (string.IsNullOrEmpty(lineaLimpia)) continue;
 
                 string[] toks = lineaLimpia.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+                
+                System.Text.RegularExpressions.MatchCollection numerosReales = null;
+                int cnuIndex = 0;
+                if (i < lineasCodigo.Length) {
+                    numerosReales = System.Text.RegularExpressions.Regex.Matches(lineasCodigo[i], @"\d+(\.\d+)?");
+                }
 
                 // Normalizaciones solicitadas (manteniendo tus tokens del lexer original)
                 foreach (var t in toks)
@@ -1860,8 +1877,16 @@ namespace ArchivoDeTokens
                     if (tokenNormalizado == "ce7") tokenNormalizado = "ce07";
                     if (tokenNormalizado == "ce8") tokenNormalizado = "ce08";
                     if (tokenNormalizado == "ce9") tokenNormalizado = "ce09";
+                    
+                    string lexema = null;
+                    if (tokenNormalizado == "CNU" || tokenNormalizado == "CN") {
+                        if (numerosReales != null && cnuIndex < numerosReales.Count) {
+                            lexema = numerosReales[cnuIndex].Value;
+                            cnuIndex++;
+                        }
+                    }
 
-                    tokensSintacticosObj.Add(new TokenSintactico { Valor = tokenNormalizado, Linea = i + 1 });
+                    tokensSintacticosObj.Add(new TokenSintactico { Valor = tokenNormalizado, Linea = i + 1, Lexema = lexema });
                 }
             }
 
@@ -1901,6 +1926,35 @@ namespace ArchivoDeTokens
         private void lblEquipo_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void RtxtCodigo_KeyDown(object sender, KeyEventArgs e)
+        {
+            // Bloquear Pegado (Ctrl+V) con formatos/imágenes y forzar pegado plano seguro
+            if (e.Control && e.KeyCode == Keys.V)
+            {
+                e.SuppressKeyPress = true;
+                if (Clipboard.ContainsText())
+                {
+                    string texto = Clipboard.GetText();
+                    // Limpiar el texto de caracteres especiales no imprimibles (mantenemos saltos de línea y tabulaciones)
+                    texto = System.Text.RegularExpressions.Regex.Replace(texto, @"[^\u0009\u000A\u000D\u0020-\u007E\u00A0-\u00FF]", "");
+                    rtxtCodigo.SelectedText = texto;
+                }
+            }
+        }
+
+        private void RtxtCodigo_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Permitir Backspace, Enter y Tab
+            if (e.KeyChar == 8 || e.KeyChar == 13 || e.KeyChar == 9) return;
+            // Permitir teclas de control estándar (Copy/Paste shortcuts se manejan en KeyDown, pero los caracteres ASCII de control se deben permitir si son de atajos)
+            if (char.IsControl(e.KeyChar)) return;
+            // Bloquear caracteres fuera del rango ASCII normal/extendido básico (bloquea emojis, símbolos raros)
+            if (e.KeyChar < 32 || e.KeyChar > 255)
+            {
+                e.Handled = true;
+            }
         }
     }
 }
