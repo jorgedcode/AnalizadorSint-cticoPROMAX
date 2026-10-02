@@ -15,5 +15,8 @@ namespace ArchivoDeTokens
         public string Nombre { get; set; }
         public string Tipo { get; set; }
         public string Valor { get; set; }
+        public string Ambito { get; set; }
+        public string Direccion { get; set; }
+        public bool Inicializada { get; set; }
     }
 }

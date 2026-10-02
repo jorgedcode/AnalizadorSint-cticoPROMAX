@@ -315,8 +315,9 @@
             this.DgvSimbolos.Location = new System.Drawing.Point(749, 691);
             this.DgvSimbolos.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.DgvSimbolos.Name = "DgvSimbolos";
+            this.DgvSimbolos.ReadOnly = true;
             this.DgvSimbolos.RowHeadersWidth = 51;
-            this.DgvSimbolos.Size = new System.Drawing.Size(979, 241);
+            this.DgvSimbolos.Size = new System.Drawing.Size(1152, 241);
             this.DgvSimbolos.TabIndex = 6;
             this.DgvSimbolos.TabStop = false;
             // 

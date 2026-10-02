@@ -26,7 +26,7 @@ namespace ArchivoDeTokens
         {
             InitializeComponent();
             CargarMatrizEnMemoria();
-            lblEquipo.Text = "Equipo\nHiram García Guerra. #23100161\nJorge Arturo Mata Camacho. #C21100514\nReynaldo Daniel Reyes Parra. #23100202\n\nVersión: 2.1.4";
+            lblEquipo.Text = "Equipo\nHiram García Guerra. #23100161\nJorge Arturo Mata Camacho. #C21100514\nReynaldo Daniel Reyes Parra. #23100202\n\nVersión: 2.1.7.r.Cynthiactico";
             rtxTokens.Text = "1\n";
             rtxLineasCodigo.Text = "1\n";
 
@@ -91,11 +91,25 @@ namespace ArchivoDeTokens
         }
 
         private int punteroSintactico = 0;
+        private int _currentMemoryOffset = 0x1000;
+        private string _ambitoActual = "Global";
         private List<TokenSintactico> tokensSintacticosObj = new List<TokenSintactico>();
         private List<ErrorSintactico> listaErroresSintacticos = new List<ErrorSintactico>();
         private StringBuilder traduccionSintactica = new StringBuilder();
         private StringBuilder trazaTopDown = new StringBuilder();
         private List<string> pasosTraza = new List<string>();
+
+        private void AsignarMemoria(Simbolo sim)
+        {
+            if (sim == null || !string.IsNullOrEmpty(sim.Direccion)) return;
+            sim.Ambito = _ambitoActual;
+            sim.Direccion = "0x" + _currentMemoryOffset.ToString("X4");
+            if (sim.Tipo == "COMP" || sim.Tipo == "FLOT") _currentMemoryOffset += 4;
+            else if (sim.Tipo == "CAR") _currentMemoryOffset += 2;
+            else if (sim.Tipo == "CAD") _currentMemoryOffset += 16;
+            else if (sim.Tipo == "BOOL") _currentMemoryOffset += 1;
+            else _currentMemoryOffset += 4;
+        }
         private void RegistrarPasoTopDown(string paso)
         {
             pasosTraza.Add(paso);
@@ -308,7 +322,11 @@ namespace ArchivoDeTokens
             Match("ID");
             
             Simbolo sim = ObtenerSimboloPorToken(tokenVar);
-            if (sim != null) sim.Tipo = "COMP";
+            if (sim != null) {
+                if (!string.IsNullOrEmpty(sim.Tipo)) throw new ExcepcionSintactica($"Error Semántico: La variable '{sim.Nombre}' ya ha sido declarada previamente.");
+                sim.Tipo = "COMP";
+                AsignarMemoria(sim);
+            }
 
             if (TokenActual().StartsWith("OPA") || TokenActual() == "opa") 
             { 
@@ -325,6 +343,7 @@ namespace ArchivoDeTokens
                 {
                     if (expr is NodoValor nv) sim.Valor = ExtraerValorDirecto(nv);
                     else sim.Valor = "Expresión";
+                    sim.Inicializada = true;
                 }
                 msg += " [OPA OPAR] FDL"; 
                 RegistrarTraduccion(msg);
@@ -347,7 +366,11 @@ namespace ArchivoDeTokens
             Match("ID");
 
             Simbolo sim = ObtenerSimboloPorToken(tokenVar);
-            if (sim != null) sim.Tipo = "FLOT";
+            if (sim != null) {
+                if (!string.IsNullOrEmpty(sim.Tipo)) throw new ExcepcionSintactica($"Error Semántico: La variable '{sim.Nombre}' ya ha sido declarada previamente.");
+                sim.Tipo = "FLOT";
+                AsignarMemoria(sim);
+            }
 
             if (TokenActual().StartsWith("OPA") || TokenActual() == "opa") 
             { 
@@ -364,6 +387,7 @@ namespace ArchivoDeTokens
                 {
                     if (expr is NodoValor nv) sim.Valor = ExtraerValorDirecto(nv);
                     else sim.Valor = "Expresión";
+                    sim.Inicializada = true;
                 }
                 msg += " [OPA OPAR] FDL"; 
                 RegistrarTraduccion(msg);
@@ -401,13 +425,23 @@ namespace ArchivoDeTokens
             Match("PR4"); Match("ID"); Match("opa"); ParseARG2(); // ARG5 original
             Match("ce18"); ParseCONDIC(); Match("ce18");
             Match("ID"); Match("opa"); ParseOPAR(); // INCRE original
-            Match("ce08"); Match("ce09"); ParseInstruccionesBloque(); Match("ce10");
+            Match("ce08"); Match("ce09");
+            string ambitoPrevio = _ambitoActual;
+            _ambitoActual = "Local (PARA)";
+            ParseInstruccionesBloque(); 
+            _ambitoActual = ambitoPrevio;
+            Match("ce10");
         }
 
         private void ParseIN06()
         {
             RegistrarTraduccion("IN06 (MIENTRAS) -> PR08 ce07 CONDIC ce08 ce09 INSTR ce10");
-            Match(TokenActual()); Match("ce07"); ParseCONDIC(); Match("ce08"); Match("ce09"); ParseInstruccionesBloque(); Match("ce10");
+            Match(TokenActual()); Match("ce07"); ParseCONDIC(); Match("ce08"); Match("ce09");
+            string ambitoPrevio = _ambitoActual;
+            _ambitoActual = "Local (MIENTRAS)";
+            ParseInstruccionesBloque(); 
+            _ambitoActual = ambitoPrevio;
+            Match("ce10");
         }
 
         private void ParseIN07()
@@ -453,7 +487,11 @@ namespace ArchivoDeTokens
             Match("ID");
 
             Simbolo sim = ObtenerSimboloPorToken(tokenVar);
-            if (sim != null) sim.Tipo = "CAD";
+            if (sim != null) {
+                if (!string.IsNullOrEmpty(sim.Tipo)) throw new ExcepcionSintactica($"Error Semántico: La variable '{sim.Nombre}' ya ha sido declarada previamente.");
+                sim.Tipo = "CAD";
+                AsignarMemoria(sim);
+            }
 
             if (TokenActual().StartsWith("OPA") || TokenActual() == "opa") 
             { 
@@ -468,6 +506,7 @@ namespace ArchivoDeTokens
                 {
                     if (expr is NodoValor nv) sim.Valor = ExtraerValorDirecto(nv);
                     else sim.Valor = "Expresión";
+                    sim.Inicializada = true;
                 }
                 msg += " [opa CAD] FDL"; 
                 RegistrarTraduccion(msg);
@@ -490,7 +529,11 @@ namespace ArchivoDeTokens
             Match("ID");
 
             Simbolo sim = ObtenerSimboloPorToken(tokenVar);
-            if (sim != null) sim.Tipo = "CAR";
+            if (sim != null) {
+                if (!string.IsNullOrEmpty(sim.Tipo)) throw new ExcepcionSintactica($"Error Semántico: La variable '{sim.Nombre}' ya ha sido declarada previamente.");
+                sim.Tipo = "CAR";
+                AsignarMemoria(sim);
+            }
 
             if (TokenActual().StartsWith("OPA") || TokenActual() == "opa")
             {
@@ -505,6 +548,7 @@ namespace ArchivoDeTokens
                 {
                     if (expr is NodoValor nv) sim.Valor = ExtraerValorDirecto(nv);
                     else sim.Valor = "Expresión";
+                    sim.Inicializada = true;
                 }
                 msg += " [opa CAR] FDL";
                 RegistrarTraduccion(msg);
@@ -574,7 +618,10 @@ namespace ArchivoDeTokens
             RegistrarPasoTopDown($"3) {tPR11} {tParAb} CONDIC {tParCe} {tLlaAb} ... (Evaluando bloque interno)");
 
             int inicioInstr = punteroSintactico;
+            string ambitoPrevio = _ambitoActual;
+            _ambitoActual = "Local (SI)";
             ParseInstruccionesBloque();
+            _ambitoActual = ambitoPrevio;
             int finInstr = punteroSintactico;
 
             string tokensInstr = ObtenerTokensConsumidos(inicioInstr, finInstr);
@@ -598,7 +645,9 @@ namespace ArchivoDeTokens
                 RegistrarPasoTopDown($"7) {tPR12} {tLlaAbSino} ... (Evaluando bloque SINO)");
 
                 int inicioInstrSino = punteroSintactico;
+                _ambitoActual = "Local (SINO)";
                 ParseInstruccionesBloque();
+                _ambitoActual = ambitoPrevio;
                 int finInstrSino = punteroSintactico;
 
                 string tokensInstrSino = ObtenerTokensConsumidos(inicioInstrSino, finInstrSino);
@@ -629,7 +678,12 @@ namespace ArchivoDeTokens
         private void ParseIN16()
         {
             RegistrarTraduccion("IN16 (HAZ-MIENTRAS) -> PR9 ce09 INSTR ce10 PR8 ce07 CONDIC ce08 FDL");
-            Match(TokenActual()); Match("ce09"); ParseInstruccionesBloque(); Match("ce10");
+            Match(TokenActual()); Match("ce09"); 
+            string ambitoPrevio = _ambitoActual;
+            _ambitoActual = "Local (HAZ-MIENTRAS)";
+            ParseInstruccionesBloque(); 
+            _ambitoActual = ambitoPrevio;
+            Match("ce10");
             if (TokenActual() == "PR8" || TokenActual() == "PR08") Match(TokenActual());
             Match("ce07"); ParseCONDIC(); Match("ce08"); Match("FDL");
         }
@@ -638,16 +692,25 @@ namespace ArchivoDeTokens
         {
             RegistrarTraduccion("IN17 (SWITCH) -> PR23 ce07 ID ce08 ce09 [PR24 ARG12 ce11 INSTR PR10 FDL] [PR25 ce11 INSTR PR10 FDL] ce10");
             Match(TokenActual()); Match("ce07"); Match("ID"); Match("ce08"); Match("ce09");
+            string ambitoPrevio = _ambitoActual;
             while (TokenActual() == "PR24")
             {
                 Match("PR24");
                 string t = TokenActual();
                 if (t == "CNU" || t == "CN" || t == "CAD" || t == "CAR") Match(t);
-                Match("ce11"); ParseInstruccionesBloque(); Match("PR10"); Match("FDL");
+                Match("ce11"); 
+                _ambitoActual = "Local (CASO SWITCH)";
+                ParseInstruccionesBloque(); 
+                _ambitoActual = ambitoPrevio;
+                Match("PR10"); Match("FDL");
             }
             if (TokenActual() == "PR25")
             {
-                Match("PR25"); Match("ce11"); ParseInstruccionesBloque(); Match("PR10");
+                Match("PR25"); Match("ce11"); 
+                _ambitoActual = "Local (DEFECTO SWITCH)";
+                ParseInstruccionesBloque(); 
+                _ambitoActual = ambitoPrevio;
+                Match("PR10");
                 if (TokenActual() == "FDL") Match("FDL");
             }
             Match("ce10");
@@ -778,9 +841,13 @@ namespace ArchivoDeTokens
                 if (valor.TipoToken.StartsWith("IDENT") || valor.TipoToken == "ID")
                 {
                     Simbolo sim = ObtenerSimboloPorToken(valor.TipoToken);
-                    if (sim != null && !string.IsNullOrEmpty(sim.Tipo))
+                    if (sim != null && !string.IsNullOrEmpty(sim.Tipo)) {
+                        if (!sim.Inicializada) {
+                            throw new ExcepcionSintactica($"Error Semántico: La variable '{sim.Nombre}' se usa sin haber sido inicializada.");
+                        }
                         return sim.Tipo;
-                    throw new ExcepcionSintactica($"Error Semántico: La variable '{sim?.Nombre ?? valor.TipoToken}' no ha sido declarada o inicializada antes de su uso en una expresión.");
+                    }
+                    throw new ExcepcionSintactica($"Error Semántico: La variable '{sim?.Nombre ?? valor.TipoToken}' no ha sido declarada.");
                 }
             }
             else if (nodo is NodoOperacion op)
@@ -853,6 +920,7 @@ namespace ArchivoDeTokens
                 
                 if (expr is NodoValor nv) sim.Valor = ExtraerValorDirecto(nv);
                 else sim.Valor = "Expresión";
+                sim.Inicializada = true;
                 
                 RegistrarTraduccion("ASIGNACION -> ID OPA EXPRESION");
                 traduccionSintactica.AppendLine("Árbol de Expresión:\r\n" + GenerarArbolTexto(expr));
@@ -1565,12 +1633,19 @@ namespace ArchivoDeTokens
         }
         private void ActualizarSimbolos()
         {
+            if (DgvSimbolos.Columns.Count < 6)
+            {
+                if (!DgvSimbolos.Columns.Contains("Ambito"))
+                    DgvSimbolos.Columns.Add("Ambito", "Ámbito");
+                if (!DgvSimbolos.Columns.Contains("Direccion"))
+                    DgvSimbolos.Columns.Add("Direccion", "Dirección");
+            }
+
             DgvSimbolos.Rows.Clear();
             foreach (Simbolo simbolo in listaSimbolos)
             {
-                DgvSimbolos.Rows.Add(simbolo.Num, simbolo.Nombre, simbolo.Tipo, simbolo.Valor);
+                DgvSimbolos.Rows.Add(simbolo.Num, simbolo.Nombre, simbolo.Tipo, simbolo.Valor, simbolo.Ambito, simbolo.Direccion);
             }
-
         }
 
         private void rtxtCodigo_KeyDown(object sender, KeyEventArgs e)
@@ -1850,6 +1925,8 @@ namespace ArchivoDeTokens
             traduccionSintactica.Clear();
             tokensSintacticosObj.Clear();
             punteroSintactico = 0;
+            _currentMemoryOffset = 0x1000;
+            _ambitoActual = "Global";
             rtxtAnSintSINO.Clear();
             pasosTraza.Clear();
 
